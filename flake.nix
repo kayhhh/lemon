@@ -61,19 +61,40 @@
           pname = "doc";
         });
 
+        lemon-agent = craneLib.buildPackage (commonArgs // {
+          inherit cargoArtifacts;
+          pname = "lemon-agent";
+        });
+
         lemon-graph = craneLib.buildPackage (commonArgs // {
           inherit cargoArtifacts;
           pname = "lemon-graph";
         });
-      in {
-        checks = { inherit lemon-graph cargoClippy cargoDoc; };
 
-        packages = {
-          lemon-graph = lemon-graph;
+        lemon-llm = craneLib.buildPackage (commonArgs // {
+          inherit cargoArtifacts;
+          pname = "lemon-llm";
+        });
+
+        lemon-memory = craneLib.buildPackage (commonArgs // {
+          inherit cargoArtifacts;
+          pname = "lemon-memory";
+        });
+      in {
+        checks = {
+          inherit lemon-agent lemon-graph lemon-llm lemon-memory cargoClippy
+            cargoDoc;
+        };
+
+        packages = rec {
+          agent = lemon-agent;
+          graph = lemon-graph;
+          llm = lemon-llm;
+          memory = lemon-memory;
 
           default = pkgs.symlinkJoin {
             name = "all";
-            paths = [ lemon-graph ];
+            paths = [ agent graph llm memory ];
           };
         };
 
