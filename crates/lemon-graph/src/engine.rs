@@ -95,15 +95,45 @@ mod tests {
     use super::*;
 
     #[tokio::test]
-    async fn test_engine() {
+    async fn basic_flow() {
         let mut graph = Graph::new();
 
+        let trigger = graph.add_node(GraphNode::Trigger("start".to_string()));
         let node_1 = graph.add_node(Delay::new(0.1).into());
         let node_2 = graph.add_node(Delay::new(0.2).into());
+        graph.add_edge(trigger, node_1, GraphEdge::Flow);
         graph.add_edge(node_1, node_2, GraphEdge::Flow);
 
+        let mut engine = Engine(graph);
+        engine.execute("start").await;
+    }
+
+    #[tokio::test]
+    async fn multiple_trigger_graphs() {
+        let mut graph = Graph::new();
+
+        let trigger_1 = graph.add_node(GraphNode::Trigger("start".to_string()));
+        let trigger_2 = graph.add_node(GraphNode::Trigger("start".to_string()));
+        let node_1 = graph.add_node(Delay::new(0.1).into());
+        let node_2 = graph.add_node(Delay::new(0.2).into());
+        graph.add_edge(trigger_1, node_1, GraphEdge::Flow);
+        graph.add_edge(trigger_2, node_2, GraphEdge::Flow);
+
+        let mut engine = Engine(graph);
+        engine.execute("start").await;
+    }
+
+    #[tokio::test]
+    async fn multiple_outputs() {
+        let mut graph = Graph::new();
+
         let trigger = graph.add_node(GraphNode::Trigger("start".to_string()));
+        let node_1 = graph.add_node(Delay::new(0.1).into());
+        let node_2 = graph.add_node(Delay::new(0.2).into());
+        let node_3 = graph.add_node(Delay::new(0.3).into());
         graph.add_edge(trigger, node_1, GraphEdge::Flow);
+        graph.add_edge(node_1, node_2, GraphEdge::Flow);
+        graph.add_edge(node_1, node_3, GraphEdge::Flow);
 
         let mut engine = Engine(graph);
         engine.execute("start").await;
