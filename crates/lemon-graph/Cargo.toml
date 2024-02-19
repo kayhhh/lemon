@@ -1,6 +1,6 @@
 [package]
 name = "lemon-graph"
-description = "Modular library for running directed computation graphs."
+description = "Async directed computation graphs."
 keywords = ["computation", "graph"]
 version.workspace = true
 license.workspace = true
