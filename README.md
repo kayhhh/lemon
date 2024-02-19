@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./lemon-chan.jpg" />
+  <img src="./lemon-chan.jpg" height="200" />
 </p>
 
 # lemon
