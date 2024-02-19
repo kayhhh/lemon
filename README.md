@@ -1,2 +1,3 @@
 # lemon
-🍋 LLM tooling
+
+🍋 Graph-based AI tooling.
