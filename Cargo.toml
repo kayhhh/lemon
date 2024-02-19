@@ -1,0 +1,14 @@
+[workspace]
+resolver = "2"
+members = [
+  "crates/*",
+]
+
+[workspace.package]
+version = "0.0.0"
+license = "GPL-3.0"
+repository = "https://github.com/unavi-xyz/lemon"
+edition = "2021"
+
+[profile.release]
+lto = true
