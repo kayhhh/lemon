@@ -1,26 +1,13 @@
 use std::{collections::HashMap, future::Future, time::Duration};
 
-use petgraph::graph::NodeIndex;
-use tokio::time::sleep;
+use crate::GraphNode;
 
-use super::{AsyncNode, Data, Node, NodeInput};
+use super::{AsyncNode, Data, NodeInput, SyncNode};
 
+#[derive(Default)]
 pub struct Delay {
-    pub idx: NodeIndex,
     /// Duration to wait in seconds.
     pub duration: f32,
-}
-
-impl Delay {
-    pub fn new(idx: NodeIndex) -> Self {
-        Self { idx, duration: 0.0 }
-    }
-}
-
-impl Node for Delay {
-    fn idx(&self) -> NodeIndex {
-        self.idx
-    }
 }
 
 impl NodeInput for Delay {
@@ -34,6 +21,19 @@ impl NodeInput for Delay {
 impl AsyncNode for Delay {
     fn run(&self) -> Box<dyn Future<Output = ()>> {
         let duration = Duration::from_secs_f32(self.duration);
-        Box::new(sleep(duration))
+        Box::new(tokio::time::sleep(duration))
+    }
+}
+
+impl SyncNode for Delay {
+    fn run(&self) {
+        let duration = Duration::from_secs_f32(self.duration);
+        std::thread::sleep(duration);
+    }
+}
+
+impl From<Delay> for GraphNode {
+    fn from(node: Delay) -> Self {
+        GraphNode::Sync(Box::new(node))
     }
 }
