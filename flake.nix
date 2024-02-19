@@ -40,7 +40,11 @@
               pkgs.libiconv
             ];
 
-          nativeBuildInputs = with pkgs; [ cargo-auditable pkg-config ];
+          nativeBuildInputs = with pkgs; [
+            cargo-auditable
+            nodePackages.prettier
+            pkg-config
+          ];
         };
 
         commonShell = {
