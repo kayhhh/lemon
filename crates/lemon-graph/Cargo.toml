@@ -1,5 +1,6 @@
 [package]
 name = "lemon-graph"
+description = "Modular library for running directed computation graphs."
 version.workspace = true
 license.workspace = true
 repository.workspace = true

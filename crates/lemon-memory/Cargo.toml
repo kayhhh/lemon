@@ -1,5 +1,6 @@
 [package]
 name = "lemon-memory"
+description = "Memory nodes for lemon-graph."
 version.workspace = true
 license.workspace = true
 repository.workspace = true

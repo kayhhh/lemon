@@ -3,9 +3,17 @@
 version = 3
 
 [[package]]
+name = "lemon-agent"
+version = "0.0.0"
+
+[[package]]
 name = "lemon-graph"
 version = "0.0.0"
 
 [[package]]
 name = "lemon-llm"
+version = "0.0.0"
+
+[[package]]
+name = "lemon-memory"
 version = "0.0.0"

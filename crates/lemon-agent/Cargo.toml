@@ -1,6 +1,6 @@
 [package]
-name = "lemon-llm"
-description = "LLM nodes for lemon-graph."
+name = "lemon-agent"
+description = "Agent framework using lemon-graph."
 version.workspace = true
 license.workspace = true
 repository.workspace = true
