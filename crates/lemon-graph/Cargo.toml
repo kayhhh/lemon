@@ -6,3 +6,7 @@ version.workspace = true
 license.workspace = true
 repository.workspace = true
 edition.workspace = true
+
+[dependencies]
+petgraph = { version = "0.6.4", default-features = false }
+tokio = { version = "1.36.0", features = ["full"] }
