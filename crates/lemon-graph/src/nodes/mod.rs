@@ -4,16 +4,18 @@ use crate::Data;
 
 pub mod delay;
 
-pub trait NodeInput {
+pub trait Node {
     /// Process input from the graph.
     /// Called before running the node.
-    fn process_input(&mut self, input: HashMap<String, Data>);
+    fn process_input(&mut self, input: HashMap<String, Data>) {
+        let _ = input;
+    }
 }
 
-pub trait AsyncNode {
-    fn run(&self) -> Box<dyn Future<Output = ()>>;
+pub trait AsyncNode: Node {
+    fn run(&self) -> Box<dyn Future<Output = ()> + Unpin>;
 }
 
-pub trait SyncNode {
+pub trait SyncNode: Node {
     fn run(&self);
 }

@@ -2,7 +2,7 @@ use std::{collections::HashMap, future::Future, time::Duration};
 
 use crate::GraphNode;
 
-use super::{AsyncNode, Data, NodeInput, SyncNode};
+use super::{AsyncNode, Data, Node, SyncNode};
 
 #[derive(Default)]
 pub struct Delay {
@@ -10,7 +10,7 @@ pub struct Delay {
     pub duration: f32,
 }
 
-impl NodeInput for Delay {
+impl Node for Delay {
     fn process_input(&mut self, input: HashMap<String, Data>) {
         if let Some(Data::F32(duration)) = input.get("duration") {
             self.duration = *duration;
@@ -19,9 +19,11 @@ impl NodeInput for Delay {
 }
 
 impl AsyncNode for Delay {
-    fn run(&self) -> Box<dyn Future<Output = ()>> {
+    fn run(&self) -> Box<dyn Future<Output = ()> + Unpin> {
         let duration = Duration::from_secs_f32(self.duration);
-        Box::new(tokio::time::sleep(duration))
+        Box::new(Box::pin(async move {
+            tokio::time::sleep(duration).await;
+        }))
     }
 }
 

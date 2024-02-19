@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use nodes::{AsyncNode, SyncNode};
 use petgraph::graph::DiGraph;
 
@@ -7,6 +9,7 @@ pub mod nodes;
 pub enum GraphNode {
     Async(Box<dyn AsyncNode>),
     Sync(Box<dyn SyncNode>),
+    Trigger(String),
 }
 
 pub enum GraphEdge {
@@ -16,15 +19,16 @@ pub enum GraphEdge {
     Flow,
 }
 
-#[derive(Debug, Clone, PartialEq, PartialOrd)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Data {
     Bool(bool),
     Bytes(Vec<u8>),
     F32(f32),
+    HashMap(HashMap<String, Data>),
     ISize(isize),
-    List(Vec<Data>),
     String(String),
     USize(usize),
+    Vec(Vec<Data>),
 }
 
 pub type Graph = DiGraph<GraphNode, GraphEdge>;
