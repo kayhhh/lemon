@@ -1,6 +1,7 @@
 [package]
 name = "lemon-agent"
 description = "Agent framework using lemon-graph."
+keywords = ["agent", "ai", "graph"]
 version.workspace = true
 license.workspace = true
 repository.workspace = true
