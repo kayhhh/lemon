@@ -1,4 +1,4 @@
-use lemon_graph::{Engine, GraphEdge, GraphNode};
+use lemon_graph::{Data, Engine, GraphEdge, GraphNode};
 use lemon_llm::{
     ollama::{OllamaBackend, OllamaModel},
     LlmBackend, LlmNode,
@@ -41,6 +41,15 @@ async fn main() {
     let trigger = engine.0.add_node(GraphNode::Trigger("start".to_string()));
     engine.0.add_edge(trigger, llm, GraphEdge::Flow);
 
-    let result = engine.execute("start").await;
+    let result = engine
+        .execute("start")
+        .await
+        .expect("Failed to execute graph");
+
+    let result = match result {
+        Data::String(s) => s,
+        _ => panic!("Unexpected result"),
+    };
+
     info!("{:?}", result);
 }
