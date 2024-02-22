@@ -81,7 +81,7 @@ impl LlmBackend for OllamaBackend {
 mod tests {
     use std::sync::Arc;
 
-    use lemon_graph::{Engine, GraphEdge, GraphNode};
+    use lemon_graph::{Data, Engine, GraphEdge, GraphNode};
 
     use crate::LlmNode;
 
@@ -109,8 +109,11 @@ mod tests {
         let trigger = engine.0.add_node(GraphNode::Trigger("start".to_string()));
         engine.0.add_edge(trigger, llm, GraphEdge::Flow);
 
-        let result = engine.execute("start").await;
+        let result = engine
+            .execute("start")
+            .await
+            .expect("Failed to execute graph");
 
-        assert!(result.is_some());
+        assert!(matches!(result, Data::String(_)));
     }
 }

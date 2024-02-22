@@ -51,5 +51,5 @@ async fn main() {
         _ => panic!("Unexpected result"),
     };
 
-    info!("{:?}", result);
+    info!("{}", result);
 }
