@@ -87,10 +87,12 @@ mod tests {
 
     use super::*;
 
+    const TEST_PROMPT: &str = "What letter comes after A?";
+
     #[tokio::test]
     async fn test_generate() {
         let backend = OllamaBackend::default();
-        let response = backend.generate("Tell me a short joke.").await;
+        let response = backend.generate(TEST_PROMPT).await;
         assert!(response.is_ok());
     }
 
@@ -100,7 +102,7 @@ mod tests {
 
         let node = LlmNode {
             backend: Arc::new(backend),
-            prompt: "Tell me a short joke.".to_string(),
+            prompt: TEST_PROMPT.to_string(),
         };
 
         let mut engine = Engine::default();
