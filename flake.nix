@@ -107,7 +107,7 @@
           default = craneLib.devShell commonShell;
           ollama = craneLib.devShell (commonShell // {
             shellHook = ''
-              ${pkgs.ollama}/bin/ollama serve 2>&1 > /dev/null &
+              ${pkgs.ollama}/bin/ollama serve > /dev/null 2>&1 &
               OLLAMA_PID=$!
 
               echo "Ollama is running with PID $OLLAMA_PID"
