@@ -6,6 +6,8 @@ use petgraph::graph::DiGraph;
 pub mod engine;
 pub mod nodes;
 
+pub use engine::Engine;
+
 pub enum GraphNode {
     Async(Box<dyn AsyncNode>),
     Sync(Box<dyn SyncNode>),

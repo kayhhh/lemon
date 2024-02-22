@@ -13,9 +13,9 @@ pub trait Node {
 }
 
 pub trait AsyncNode: Node {
-    fn run(&self) -> Box<dyn Future<Output = ()> + Unpin>;
+    fn run(&mut self) -> Box<dyn Future<Output = Option<Data>> + Unpin>;
 }
 
 pub trait SyncNode: Node {
-    fn run(&self);
+    fn run(&mut self) -> Option<Data>;
 }

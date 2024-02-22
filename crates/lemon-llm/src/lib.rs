@@ -1,10 +1,11 @@
-use std::{collections::HashMap, future::Future};
+use std::{collections::HashMap, future::Future, sync::Arc};
 
 use lemon_graph::{
     nodes::{AsyncNode, Node},
     Data,
 };
 use thiserror::Error;
+use tracing::{error, info};
 
 #[cfg(feature = "ollama")]
 pub mod ollama;
@@ -12,15 +13,27 @@ pub mod ollama;
 pub mod replicate;
 
 #[derive(Debug, Error)]
-pub enum GenerateError {}
-
-pub trait LlmBackend {
-    fn generate(&self, prompt: &str) -> Box<dyn Future<Output = ()> + Unpin>;
+pub enum GenerateError {
+    #[error("Backend error: {0}")]
+    BackendError(String),
 }
 
-pub struct LlmNode<T: LlmBackend> {
-    pub backend: T,
+pub trait LlmBackend {
+    fn generate(&self, prompt: &str) -> impl Future<Output = Result<String, GenerateError>>;
+}
+
+pub struct LlmNode<T: LlmBackend + 'static> {
+    pub backend: Arc<T>,
     pub prompt: String,
+}
+
+impl<T: LlmBackend> LlmNode<T> {
+    pub fn new(backend: T) -> Self {
+        Self {
+            backend: Arc::new(backend),
+            prompt: String::new(),
+        }
+    }
 }
 
 impl<T: LlmBackend> Node for LlmNode<T> {
@@ -32,7 +45,23 @@ impl<T: LlmBackend> Node for LlmNode<T> {
 }
 
 impl<T: LlmBackend> AsyncNode for LlmNode<T> {
-    fn run(&self) -> Box<dyn Future<Output = ()> + Unpin> {
-        self.backend.generate(&self.prompt)
+    fn run(&mut self) -> Box<dyn Future<Output = Option<Data>> + Unpin> {
+        let backend = self.backend.clone();
+        let prompt = self.prompt.clone();
+
+        Box::new(Box::pin(async move {
+            let response = backend.generate(&prompt).await;
+
+            match response {
+                Ok(output) => {
+                    info!("Generated: {}", output);
+                    Some(Data::String(output))
+                }
+                Err(e) => {
+                    error!("Error: {}", e);
+                    None
+                }
+            }
+        }))
     }
 }

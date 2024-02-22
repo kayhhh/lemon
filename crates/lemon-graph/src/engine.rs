@@ -4,11 +4,12 @@ use petgraph::{graph::NodeIndex, visit::EdgeRef, Direction};
 
 use crate::{Data, Graph, GraphEdge, GraphNode};
 
+/// Graph execution engine.
 #[derive(Default)]
 pub struct Engine(pub Graph);
 
 impl Engine {
-    pub async fn execute(&mut self, trigger: &str) {
+    pub async fn execute(&mut self, trigger: &str) -> Option<Data> {
         let trigger_nodes: Vec<NodeIndex> = self
             .0
             .node_indices()
@@ -18,6 +19,8 @@ impl Engine {
             })
             .collect();
 
+        let mut data = None;
+
         for node in trigger_nodes {
             let step = ExecutionStep { idx: node };
 
@@ -26,11 +29,15 @@ impl Engine {
             while !steps.is_empty() {
                 let mut next_steps = Vec::new();
                 for step in steps {
-                    next_steps.extend(step.step(&mut self.0).await);
+                    let out = step.step(&mut self.0).await;
+                    data = out.0;
+                    next_steps.extend(out.1);
                 }
                 steps = next_steps;
             }
         }
+
+        data
     }
 }
 
@@ -43,33 +50,35 @@ impl ExecutionStep {
         Self { idx }
     }
 
-    pub async fn step(&self, graph: &mut Graph) -> Vec<ExecutionStep> {
+    pub async fn step(&self, graph: &mut Graph) -> (Option<Data>, Vec<ExecutionStep>) {
         // Read input from the graph.
         let input = read_input(self.idx, graph);
 
         // Process input and run the node.
-        match &mut graph[self.idx] {
+        let data = match &mut graph[self.idx] {
             GraphNode::Async(node) => {
                 node.process_input(input);
-                node.run().await;
+                node.run().await
             }
             GraphNode::Sync(node) => {
                 node.process_input(input);
-                node.run();
+                node.run()
             }
             _ => {
-                return Vec::new();
+                return (None, Vec::new());
             }
-        }
+        };
 
         // Return the next steps.
-        graph
+        let next_steps = graph
             .edges_directed(self.idx, Direction::Outgoing)
             .filter_map(|edge| match &graph[edge.id()] {
                 GraphEdge::Flow => Some(ExecutionStep::new(edge.target())),
                 _ => None,
             })
-            .collect()
+            .collect();
+
+        (data, next_steps)
     }
 }
 

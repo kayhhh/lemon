@@ -2,7 +2,7 @@ use std::{collections::HashMap, future::Future, time::Duration};
 
 use crate::GraphNode;
 
-use super::{AsyncNode, Data, Node, SyncNode};
+use super::{AsyncNode, Data, Node};
 
 #[derive(Default)]
 pub struct Delay {
@@ -25,24 +25,18 @@ impl Node for Delay {
 }
 
 impl AsyncNode for Delay {
-    fn run(&self) -> Box<dyn Future<Output = ()> + Unpin> {
+    fn run(&mut self) -> Box<dyn Future<Output = Option<Data>> + Unpin> {
         let duration = Duration::from_secs_f32(self.duration);
         Box::new(Box::pin(async move {
             tokio::time::sleep(duration).await;
+            None
         }))
-    }
-}
-
-impl SyncNode for Delay {
-    fn run(&self) {
-        let duration = Duration::from_secs_f32(self.duration);
-        std::thread::sleep(duration);
     }
 }
 
 impl From<Delay> for GraphNode {
     fn from(node: Delay) -> Self {
-        GraphNode::Sync(Box::new(node))
+        GraphNode::Async(Box::new(node))
     }
 }
 
@@ -54,19 +48,6 @@ mod tests {
 
     #[tokio::test]
     async fn test_delay_async() {
-        let mut graph = Graph::new();
-        let delay_idx = graph.add_node(Delay::new(0.1).into());
-
-        let start = std::time::Instant::now();
-        let step = ExecutionStep::new(delay_idx);
-        step.step(&mut graph).await;
-        let end = std::time::Instant::now();
-
-        assert!(end - start >= Duration::from_secs_f32(0.1));
-    }
-
-    #[tokio::test]
-    async fn test_delay_sync() {
         let mut graph = Graph::new();
         let delay_idx = graph.add_node(Delay::new(0.1).into());
 
