@@ -77,11 +77,8 @@ fn read_input(node_idx: NodeIndex, graph: &Graph) -> HashMap<String, Data> {
     graph
         .edges_directed(node_idx, Direction::Incoming)
         .fold(HashMap::new(), |mut acc, edge| {
-            match &graph[edge.id()] {
-                GraphEdge::Data { key, data } => {
-                    acc.insert(key.clone(), data.clone());
-                }
-                _ => {}
+            if let GraphEdge::Data { key, data } = &graph[edge.id()] {
+                acc.insert(key.clone(), data.clone());
             }
 
             acc
