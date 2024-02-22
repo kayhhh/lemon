@@ -28,11 +28,13 @@ impl Engine {
 
             while !steps.is_empty() {
                 let mut next_steps = Vec::new();
+
                 for step in steps {
                     let out = step.step(&mut self.0).await;
                     data = out.0;
                     next_steps.extend(out.1);
                 }
+
                 steps = next_steps;
             }
         }
@@ -64,9 +66,7 @@ impl ExecutionStep {
                 node.process_input(input);
                 node.run()
             }
-            _ => {
-                return (None, Vec::new());
-            }
+            _ => None,
         };
 
         // Return the next steps.

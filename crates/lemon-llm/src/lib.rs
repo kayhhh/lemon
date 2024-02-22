@@ -2,10 +2,10 @@ use std::{collections::HashMap, future::Future, sync::Arc};
 
 use lemon_graph::{
     nodes::{AsyncNode, Node},
-    Data,
+    Data, GraphNode,
 };
 use thiserror::Error;
-use tracing::{error, info};
+use tracing::{debug, error};
 
 #[cfg(feature = "ollama")]
 pub mod ollama;
@@ -54,7 +54,7 @@ impl<T: LlmBackend> AsyncNode for LlmNode<T> {
 
             match response {
                 Ok(output) => {
-                    info!("Generated: {}", output);
+                    debug!("Generated: {}", output);
                     Some(Data::String(output))
                 }
                 Err(e) => {
@@ -63,5 +63,11 @@ impl<T: LlmBackend> AsyncNode for LlmNode<T> {
                 }
             }
         }))
+    }
+}
+
+impl<T: LlmBackend> From<LlmNode<T>> for GraphNode {
+    fn from(value: LlmNode<T>) -> Self {
+        Self::Async(Box::new(value))
     }
 }

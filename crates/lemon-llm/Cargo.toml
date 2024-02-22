@@ -23,3 +23,4 @@ replicate-rust = { version = "0.0.5",optional = true }
 
 [dev-dependencies]
 tokio.workspace = true
+tracing-subscriber = "0.3.18"

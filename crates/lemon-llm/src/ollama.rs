@@ -31,13 +31,24 @@ impl OllamaModel {
         match self {
             Self::Llama2 => "llama2",
             Self::Llama2Uncensored => "llama2-uncensored",
-            Self::Mistral7B => "mistral7b",
+            Self::Mistral7B => "mistral",
         }
     }
 }
 
 impl LlmBackend for OllamaBackend {
     async fn generate(&self, prompt: &str) -> Result<String, GenerateError> {
+        // Pull the model if it's not already downloaded.
+        reqwest::Client::new()
+            .post(format!("{}/api/pull", OLLAMA_URL))
+            .json(&json!({
+                "name": self.model.as_str(),
+            }))
+            .send()
+            .await
+            .map_err(|e| GenerateError::BackendError(e.to_string()))?;
+
+        // Run the model.
         let response = reqwest::Client::new()
             .post(format!("{}/api/generate", OLLAMA_URL))
             .json(&json!({
@@ -48,10 +59,21 @@ impl LlmBackend for OllamaBackend {
             .await
             .map_err(|e| GenerateError::BackendError(e.to_string()))?;
 
-        response
+        let text = response
             .text()
             .await
-            .map_err(|e| GenerateError::BackendError(e.to_string()))
+            .map_err(|e| GenerateError::BackendError(e.to_string()))?;
+
+        Ok(text
+            .lines()
+            .map(|line| {
+                // Extract the text from the JSON response.
+                let json: serde_json::Value = serde_json::from_str(line).unwrap();
+                json["response"].as_str().unwrap_or_default().to_string()
+            })
+            .collect::<String>()
+            .trim()
+            .to_string())
     }
 }
 
@@ -68,10 +90,17 @@ mod tests {
     #[tokio::test]
     async fn test_generate() {
         let backend = OllamaBackend::default();
+        let response = backend.generate("Tell me a short joke.").await;
+        assert!(response.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_node() {
+        let backend = OllamaBackend::default();
 
         let node = LlmNode {
             backend: Arc::new(backend),
-            prompt: "Once upon a time".to_string(),
+            prompt: "Tell me a short joke.".to_string(),
         };
 
         let mut engine = Engine::default();
