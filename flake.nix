@@ -43,6 +43,7 @@
           nativeBuildInputs = with pkgs; [
             cargo-auditable
             nodePackages.prettier
+            ollama
             pkg-config
           ];
         };
@@ -104,7 +105,25 @@
 
         devShells = {
           default = craneLib.devShell commonShell;
-          ollama = craneLib.devShell commonShell; # TODO: launch ollama
+          ollama = craneLib.devShell (commonShell // {
+            shellHook = ''
+              ${pkgs.ollama}/bin/ollama serve 2>&1 > /dev/null &
+              OLLAMA_PID=$!
+
+              echo "Ollama is running with PID $OLLAMA_PID"
+
+              finish()
+              {
+                echo "Shutting down Ollama"
+                kill -9 $OLLAMA_PID
+                wait $OLLAMA_PID
+              }
+
+              trap finish EXIT
+
+              $SHELL
+            '';
+          });
         };
       });
 }
