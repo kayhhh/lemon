@@ -1,3 +1,7 @@
 # lemon-agent
 
-<!-- cargo-rdme -->
+<!-- cargo-rdme start -->
+
+Agent framework using [lemon-graph](https://github.com/unavi-xyz/lemon/tree/main/crates/lemon-graph).
+
+<!-- cargo-rdme end -->
