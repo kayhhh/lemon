@@ -3,25 +3,11 @@ use tracing::info;
 
 use crate::{Graph, GraphEdge, GraphNode, Value};
 
-use super::{NodeError, NodeInterface, SetStoreError, SyncNode};
+use super::{util::input_stores, NodeError, SetStoreError, SyncNode};
 
-/// Provides a log value.
+/// Logs a provided message.
 #[derive(Debug, Clone, Copy)]
 pub struct Log(pub NodeIndex);
-
-impl From<NodeIndex> for Log {
-    fn from(index: NodeIndex) -> Self {
-        Self(index)
-    }
-}
-
-impl From<Log> for NodeIndex {
-    fn from(log: Log) -> Self {
-        log.0
-    }
-}
-
-impl NodeInterface for Log {}
 
 impl Log {
     pub fn new(graph: &mut Graph) -> Self {
@@ -33,12 +19,16 @@ impl Log {
         Self(index)
     }
 
+    /// Get the index of the message input.
+    pub fn message_store_idx(&self, graph: &Graph) -> Result<NodeIndex, SetStoreError> {
+        input_stores(self.0, graph)
+            .next()
+            .ok_or(SetStoreError::NoStore)
+    }
+
     /// Sets the value of the input store.
     pub fn set_message(&self, graph: &mut Graph, message: String) -> Result<(), SetStoreError> {
-        let input_idx = self
-            .input_stores(graph)
-            .next()
-            .ok_or(SetStoreError::NoStore)?;
+        let input_idx = self.message_store_idx(graph)?;
         graph[input_idx] = GraphNode::Store(Value::String(message));
         Ok(())
     }

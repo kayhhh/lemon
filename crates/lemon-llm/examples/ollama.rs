@@ -1,8 +1,11 @@
-use lemon_graph::{Data, Engine, GraphEdge, GraphNode};
+use std::sync::Arc;
+
+use lemon_graph::{nodes::Log, ExecutionStep, GraphEdge};
 use lemon_llm::{
     ollama::{OllamaBackend, OllamaModel},
-    LlmBackend, LlmNode,
+    LlmBackend, LlmNode, LlmWeight,
 };
+use petgraph::Graph;
 use tracing::info;
 
 #[tokio::main]
@@ -27,29 +30,49 @@ async fn main() {
 
     info!("{}", response);
 
-    // Use the backend within a graph.
-    let mut engine = Engine::default();
+    // Or you can use the backend within a graph.
+    let mut graph = Graph::new();
 
-    let llm = engine.0.add_node(
-        LlmNode {
-            backend: backend.into(),
-            prompt: "Tell me a short cat fact!".to_string(),
-        }
-        .into(),
-    );
+    // Create an initial LLM to generate a prompt for the next LLM.
+    let backend = Arc::new(backend);
+    let node_1 = LlmNode::new(&mut graph, LlmWeight::new(backend.clone()));
 
-    let trigger = engine.0.add_node(GraphNode::Trigger("start".to_string()));
-    engine.0.add_edge(trigger, llm, GraphEdge::Flow);
+    // Manually set the prompt.
+    node_1
+        .set_prompt(
+            &mut graph,
+            "Write an LLM prompt to get a cat fact.".to_string(),
+        )
+        .unwrap();
 
-    let result = engine
-        .execute("start")
-        .await
-        .expect("Failed to execute graph");
+    // Log the response.
+    let log_1 = Log::new(&mut graph);
+    graph.add_edge(node_1.0, log_1.0, GraphEdge::ExecutionFlow);
 
-    let result = match result {
-        Data::String(s) => s,
-        _ => panic!("Unexpected result"),
-    };
+    let node_1_output = node_1.response_store_idx(&graph).unwrap();
+    let log_1_input = log_1.message_store_idx(&graph).unwrap();
+    graph.add_edge(node_1_output, log_1_input, GraphEdge::DataFlow);
 
-    info!("{}", result);
+    // Create a second LLM to respond to the generated prompt.
+    let node_2 = LlmNode::new(&mut graph, LlmWeight::new(backend));
+    graph.add_edge(node_1.0, node_2.0, GraphEdge::ExecutionFlow);
+
+    let node_2_input = node_2.prompt_store_idx(&graph).unwrap();
+    graph.add_edge(node_1_output, node_2_input, GraphEdge::DataFlow);
+
+    // Log the response.
+    let log_2 = Log::new(&mut graph);
+    graph.add_edge(node_2.0, log_2.0, GraphEdge::ExecutionFlow);
+
+    let node_2_output = node_2.response_store_idx(&graph).unwrap();
+    let log_2_input = log_2.message_store_idx(&graph).unwrap();
+    graph.add_edge(node_2_output, log_2_input, GraphEdge::DataFlow);
+
+    // Execute the graph.
+    let mut steps = vec![ExecutionStep(node_1.0)];
+
+    while let Some(step) = steps.pop() {
+        let next_steps = step.execute(&mut graph).await.unwrap();
+        steps.extend(next_steps);
+    }
 }

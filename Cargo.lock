@@ -398,6 +398,7 @@ name = "lemon-llm"
 version = "0.0.0"
 dependencies = [
  "lemon-graph",
+ "petgraph",
  "replicate-rust",
  "reqwest",
  "serde_json",

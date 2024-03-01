@@ -81,41 +81,64 @@ impl LlmBackend for OllamaBackend {
 mod tests {
     use std::sync::Arc;
 
-    use lemon_graph::{Data, Engine, GraphEdge, GraphNode};
+    use lemon_graph::{nodes::AsyncNode, ExecutionStep, Graph, GraphNode, Value};
+    use petgraph::Direction;
 
-    use crate::LlmNode;
+    use crate::{LlmNode, LlmWeight};
 
     use super::*;
 
     const TEST_PROMPT: &str = "What letter comes after A?";
 
     #[tokio::test]
-    async fn test_generate() {
+    async fn test_backend() {
         let backend = OllamaBackend::default();
-        let response = backend.generate(TEST_PROMPT).await;
-        assert!(response.is_ok());
+        let response = backend.generate(TEST_PROMPT).await.unwrap();
+
+        assert!(!response.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_weight() {
+        let backend = OllamaBackend::default();
+        let weight = LlmWeight {
+            backend: Arc::new(backend),
+        };
+        let response = weight
+            .run(vec![TEST_PROMPT.to_string().into()])
+            .await
+            .unwrap();
+
+        assert!(!response.is_empty());
     }
 
     #[tokio::test]
     async fn test_node() {
         let backend = OllamaBackend::default();
 
-        let node = LlmNode {
+        let weight = LlmWeight {
             backend: Arc::new(backend),
-            prompt: TEST_PROMPT.to_string(),
         };
 
-        let mut engine = Engine::default();
+        let mut graph = Graph::new();
+        let node = LlmNode::new(&mut graph, weight);
 
-        let llm = engine.0.add_node(GraphNode::Async(Box::new(node)));
-        let trigger = engine.0.add_node(GraphNode::Trigger("start".to_string()));
-        engine.0.add_edge(trigger, llm, GraphEdge::Flow);
+        node.set_prompt(&mut graph, TEST_PROMPT.to_string())
+            .unwrap();
 
-        let result = engine
-            .execute("start")
-            .await
-            .expect("Failed to execute graph");
+        let step = ExecutionStep(node.0);
+        let _ = step.execute(&mut graph).await.unwrap();
 
-        assert!(matches!(result, Data::String(_)));
+        let output = graph
+            .neighbors_directed(node.0, Direction::Outgoing)
+            .next()
+            .unwrap();
+        let output = graph.node_weight(output).unwrap();
+        let output = match output {
+            GraphNode::Store(Value::String(output)) => output,
+            _ => panic!(),
+        };
+
+        assert!(!output.is_empty());
     }
 }

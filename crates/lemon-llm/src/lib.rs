@@ -1,18 +1,60 @@
 //! LLM nodes for [lemon-graph](https://github.com/unavi-xyz/lemon/tree/main/crates/lemon-graph).
 
-use std::{collections::HashMap, future::Future, sync::Arc};
+use std::{future::Future, sync::Arc};
 
 use lemon_graph::{
-    nodes::{AsyncNode, Run},
-    Data, GraphNode,
+    nodes::{
+        util::{input_stores, output_stores},
+        AsyncNode, NodeError, SetStoreError,
+    },
+    Graph, GraphEdge, GraphNode, Value,
 };
+use petgraph::graph::NodeIndex;
 use thiserror::Error;
-use tracing::{debug, error};
+use tracing::error;
 
 #[cfg(feature = "ollama")]
 pub mod ollama;
 #[cfg(feature = "replicate")]
 pub mod replicate;
+
+#[derive(Debug, Clone, Copy)]
+pub struct LlmNode(pub NodeIndex);
+
+impl LlmNode {
+    pub fn new<T: LlmBackend>(graph: &mut Graph, weight: LlmWeight<T>) -> Self {
+        let index = graph.add_node(GraphNode::AsyncNode(Box::new(weight)));
+
+        let input = graph.add_node(GraphNode::Store(Value::String(Default::default())));
+        graph.add_edge(input, index, GraphEdge::DataMap(0));
+
+        let output = graph.add_node(GraphNode::Store(Value::String(Default::default())));
+        graph.add_edge(index, output, GraphEdge::DataMap(0));
+
+        Self(index)
+    }
+
+    /// Get the index of the prompt input.
+    pub fn prompt_store_idx(&self, graph: &Graph) -> Result<NodeIndex, SetStoreError> {
+        input_stores(self.0, graph)
+            .next()
+            .ok_or(SetStoreError::NoStore)
+    }
+
+    /// Get the index of the response output.
+    pub fn response_store_idx(&self, graph: &Graph) -> Result<NodeIndex, SetStoreError> {
+        output_stores(self.0, graph)
+            .next()
+            .ok_or(SetStoreError::NoStore)
+    }
+
+    /// Manually set the prompt.
+    pub fn set_prompt(&self, graph: &mut Graph, message: String) -> Result<(), SetStoreError> {
+        let input_idx = self.prompt_store_idx(graph)?;
+        graph[input_idx] = GraphNode::Store(Value::String(message));
+        Ok(())
+    }
+}
 
 #[derive(Debug, Error)]
 pub enum GenerateError {
@@ -24,52 +66,36 @@ pub trait LlmBackend {
     fn generate(&self, prompt: &str) -> impl Future<Output = Result<String, GenerateError>>;
 }
 
-pub struct LlmNode<T: LlmBackend + 'static> {
+pub struct LlmWeight<T: LlmBackend + 'static> {
     pub backend: Arc<T>,
-    pub prompt: String,
 }
 
-impl<T: LlmBackend> LlmNode<T> {
-    pub fn new(backend: T) -> Self {
-        Self {
-            backend: Arc::new(backend),
-            prompt: String::new(),
-        }
+impl<T: LlmBackend> LlmWeight<T> {
+    pub fn new(backend: Arc<T>) -> Self {
+        Self { backend }
     }
 }
 
-impl<T: LlmBackend> Run for LlmNode<T> {
-    fn process_input(&mut self, input: HashMap<String, Data>) {
-        if let Some(Data::String(prompt)) = input.get("prompt") {
-            self.prompt = prompt.clone();
-        }
-    }
-}
-
-impl<T: LlmBackend> AsyncNode for LlmNode<T> {
-    fn run(&mut self) -> Box<dyn Future<Output = Option<Data>> + Unpin> {
+impl<T: LlmBackend> AsyncNode for LlmWeight<T> {
+    fn run(
+        &self,
+        inputs: Vec<Value>,
+    ) -> Box<dyn Future<Output = Result<Vec<Value>, NodeError>> + Unpin> {
         let backend = self.backend.clone();
-        let prompt = self.prompt.clone();
 
         Box::new(Box::pin(async move {
-            let response = backend.generate(&prompt).await;
+            let prompt = match inputs.first() {
+                Some(Value::String(prompt)) => prompt.clone(),
+                Some(v) => return Err(NodeError::ConversionError(v.clone())),
+                None => return Err(NodeError::MissingInput(0)),
+            };
 
-            match response {
-                Ok(output) => {
-                    debug!("Generated: {}", output);
-                    Some(Data::String(output))
-                }
-                Err(e) => {
-                    error!("Error: {}", e);
-                    None
-                }
-            }
+            let response = backend
+                .generate(&prompt)
+                .await
+                .map_err(|e| NodeError::InternalError(format!("Failed to generate: {}", e)))?;
+
+            Ok(vec![Value::String(response)])
         }))
-    }
-}
-
-impl<T: LlmBackend> From<LlmNode<T>> for GraphNode {
-    fn from(value: LlmNode<T>) -> Self {
-        Self::Async(Box::new(value))
     }
 }
