@@ -81,3 +81,78 @@ impl ExecutionStep {
             }))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::{
+        nodes::{AsyncNode, SyncNode},
+        Value,
+    };
+
+    use super::*;
+
+    struct TestSync;
+
+    impl SyncNode for TestSync {
+        fn run(&self, inputs: Vec<Value>) -> Result<Vec<Value>, NodeError> {
+            Ok(inputs)
+        }
+    }
+
+    struct TestAsync;
+
+    impl AsyncNode for TestAsync {
+        fn run(
+            &self,
+            inputs: Vec<Value>,
+        ) -> Box<dyn std::future::Future<Output = Result<Vec<Value>, NodeError>> + Unpin> {
+            Box::new(Box::pin(async move { Ok(inputs) }))
+        }
+    }
+
+    #[tokio::test]
+    async fn test_sync_execution() {
+        let mut graph = Graph::new();
+
+        let input = graph.add_node(GraphNode::Store(Value::String("Hello, world!".to_string())));
+        let node = graph.add_node(GraphNode::SyncNode(Box::new(TestSync)));
+        let output = graph.add_node(GraphNode::Store(Value::String(Default::default())));
+        graph.add_edge(input, node, GraphEdge::DataMap(0));
+        graph.add_edge(node, output, GraphEdge::DataMap(0));
+
+        let step = ExecutionStep(node);
+        let next_steps = step.execute(&mut graph).await.unwrap().collect::<Vec<_>>();
+
+        assert_eq!(next_steps.len(), 0);
+
+        let output_value = graph.node_weight(output).unwrap();
+        let output_value = match output_value {
+            GraphNode::Store(value) => value,
+            _ => panic!(),
+        };
+        assert_eq!(output_value, &Value::String("Hello, world!".to_string()));
+    }
+
+    #[tokio::test]
+    async fn test_async_execution() {
+        let mut graph = Graph::new();
+
+        let input = graph.add_node(GraphNode::Store(Value::String("Hello, world!".to_string())));
+        let node = graph.add_node(GraphNode::AsyncNode(Box::new(TestAsync)));
+        let output = graph.add_node(GraphNode::Store(Value::String(Default::default())));
+        graph.add_edge(input, node, GraphEdge::DataMap(0));
+        graph.add_edge(node, output, GraphEdge::DataMap(0));
+
+        let step = ExecutionStep(node);
+        let next_steps = step.execute(&mut graph).await.unwrap().collect::<Vec<_>>();
+
+        assert_eq!(next_steps.len(), 0);
+
+        let output_value = graph.node_weight(output).unwrap();
+        let output_value = match output_value {
+            GraphNode::Store(value) => value,
+            _ => panic!(),
+        };
+        assert_eq!(output_value, &Value::String("Hello, world!".to_string()));
+    }
+}
