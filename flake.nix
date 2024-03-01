@@ -94,8 +94,11 @@
         apps = {
           generate-readme = flake-utils.lib.mkApp {
             drv = pkgs.writeScriptBin "generate-readme" ''
-              cd crates/lemon-graph
-              cargo rdme
+              cd crates
+
+              for folder in */; do
+                (cd $folder && cargo rdme)
+              done
             '';
           };
         };
