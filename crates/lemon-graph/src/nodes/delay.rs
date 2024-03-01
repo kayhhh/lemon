@@ -1,61 +1,44 @@
-use std::{collections::HashMap, future::Future, time::Duration};
+use std::{future::Future, time::Duration};
 
-use crate::GraphNode;
+use crate::Value;
 
-use super::{AsyncNode, Data, Node};
+use super::{Node, TypedNode};
 
-#[derive(Default)]
-pub struct Delay {
-    /// Duration to wait in seconds.
-    pub duration: f32,
-}
+pub struct Delay;
 
-impl Delay {
-    pub fn new(duration: f32) -> Self {
-        Self { duration }
-    }
-}
+impl TypedNode<f32, f32> for Delay {}
 
 impl Node for Delay {
-    fn process_input(&mut self, input: HashMap<String, Data>) {
-        if let Some(Data::F32(duration)) = input.get("duration") {
-            self.duration = *duration;
-        }
-    }
-}
+    fn run(&mut self, input: Value) -> Box<dyn Future<Output = Value> + Unpin> {
+        let duration = match input {
+            Value::F32(duration) => duration,
+            _ => panic!("Expected f32"),
+        };
 
-impl AsyncNode for Delay {
-    fn run(&mut self) -> Box<dyn Future<Output = Option<Data>> + Unpin> {
-        let duration = Duration::from_secs_f32(self.duration);
+        let start = tokio::time::Instant::now();
+
         Box::new(Box::pin(async move {
-            tokio::time::sleep(duration).await;
-            None
+            tokio::time::sleep(Duration::from_secs_f32(duration)).await;
+            let elapsed = start.elapsed().as_secs_f32();
+            Value::F32(elapsed)
         }))
-    }
-}
-
-impl From<Delay> for GraphNode {
-    fn from(node: Delay) -> Self {
-        GraphNode::Async(Box::new(node))
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{engine::ExecutionStep, Graph};
-
     use super::*;
 
     #[tokio::test]
-    async fn test_delay_async() {
-        let mut graph = Graph::new();
-        let delay_idx = graph.add_node(Delay::new(0.1).into());
+    async fn test_delay() {
+        let mut delay = Delay;
 
-        let start = std::time::Instant::now();
-        let step = ExecutionStep::new(delay_idx);
-        step.step(&mut graph).await;
-        let end = std::time::Instant::now();
+        let value = 0.1;
+        let out = delay.run_typed(value).await.unwrap();
+        assert!(out > value);
 
-        assert!(end - start >= Duration::from_secs_f32(0.1));
+        let value = Value::F32(0.2);
+        let out = delay.run(value.clone()).await;
+        assert!(out > value);
     }
 }

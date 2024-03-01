@@ -9,5 +9,6 @@ edition.workspace = true
 
 [dependencies]
 petgraph = { version = "0.6.4", default-features = false }
+thiserror.workspace = true
 tokio.workspace = true
 tracing.workspace = true

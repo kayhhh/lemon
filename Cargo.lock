@@ -378,6 +378,7 @@ name = "lemon-graph"
 version = "0.0.0"
 dependencies = [
  "petgraph",
+ "thiserror",
  "tokio",
  "tracing",
 ]
