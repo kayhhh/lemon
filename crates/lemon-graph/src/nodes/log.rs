@@ -4,7 +4,7 @@ use tracing::Level;
 
 use crate::Value;
 
-use super::{Node, TypedNode};
+use super::{Node, NodeError, TypedNode};
 
 pub struct Log {
     pub level: Level,
@@ -25,15 +25,15 @@ impl Log {
 impl TypedNode<String, String> for Log {}
 
 impl Node for Log {
-    fn run(&mut self, input: Value) -> Box<dyn Future<Output = Value> + Unpin> {
+    fn run(&mut self, input: Value) -> Box<dyn Future<Output = Result<Value, NodeError>> + Unpin> {
         let level = self.level;
 
-        let message = match input {
-            Value::String(message) => message,
-            _ => panic!("Expected String"),
-        };
-
         Box::new(Box::pin(async move {
+            let message = match input {
+                Value::String(message) => message,
+                v => return Err(NodeError::ConversionError(v)),
+            };
+
             match level {
                 Level::TRACE => tracing::trace!("{}", message),
                 Level::DEBUG => tracing::debug!("{}", message),
@@ -42,7 +42,7 @@ impl Node for Log {
                 Level::ERROR => tracing::error!("{}", message),
             };
 
-            Value::String(message)
+            Ok(Value::String(message))
         }))
     }
 }
@@ -60,7 +60,7 @@ mod tests {
         assert_eq!(out, value);
 
         let value = Value::String("Hello, world!".to_string());
-        let out = log.run(value.clone()).await;
+        let out = log.run(value.clone()).await.unwrap();
         assert_eq!(out, value);
     }
 }

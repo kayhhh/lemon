@@ -11,23 +11,24 @@ pub use log::Log;
 
 use crate::Value;
 
-pub trait Node {
-    fn run(&mut self, input: Value) -> Box<dyn Future<Output = Value> + Unpin>;
+#[derive(Debug, Error)]
+pub enum NodeError {
+    #[error("Conversion error, got {0:?}")]
+    ConversionError(Value),
+    #[error("Internal error: {0}")]
+    InternalError(String),
 }
 
-#[derive(Debug, Error)]
-pub enum RunTypedError {
-    #[error("Conversion error, expected {0:?}, got {1:?}")]
-    ConversionError(Value, Value),
+pub trait Node {
+    fn run(&mut self, input: Value) -> Box<dyn Future<Output = Result<Value, NodeError>> + Unpin>;
 }
 
 pub trait TypedNode<I: Into<Value>, O: TryFrom<Value>>: Node {
-    fn run_typed(&mut self, input: I) -> impl Future<Output = Result<O, RunTypedError>> {
+    fn run_typed(&mut self, input: I) -> impl Future<Output = Result<O, NodeError>> {
         async move {
             let input = input.into();
-            let output_value = self.run(input.clone()).await;
-            O::try_from(output_value.clone())
-                .map_err(|_| RunTypedError::ConversionError(input, output_value))
+            let output_value = self.run(input.clone()).await?;
+            O::try_from(output_value.clone()).map_err(|_| NodeError::ConversionError(output_value))
         }
     }
 }
