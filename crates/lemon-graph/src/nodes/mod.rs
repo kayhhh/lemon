@@ -1,4 +1,3 @@
-
 use std::future::Future;
 use thiserror::Error;
 
@@ -7,9 +6,7 @@ pub mod util;
 
 pub use log::Log;
 
-use crate::{Value};
-
-
+use crate::Value;
 
 #[derive(Debug, Error)]
 pub enum NodeError {
