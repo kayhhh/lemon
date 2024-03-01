@@ -58,3 +58,4 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: nix develop -c cargo doc --all-features --no-deps
       - run: nix develop -c cargo test --all-features --all-targets
+      - run: nix develop -c cargo test --doc --all-features
