@@ -3,7 +3,7 @@
 use std::{collections::HashMap, future::Future, sync::Arc};
 
 use lemon_graph::{
-    nodes::{AsyncNode, Node},
+    nodes::{AsyncNode, Run},
     Data, GraphNode,
 };
 use thiserror::Error;
@@ -38,7 +38,7 @@ impl<T: LlmBackend> LlmNode<T> {
     }
 }
 
-impl<T: LlmBackend> Node for LlmNode<T> {
+impl<T: LlmBackend> Run for LlmNode<T> {
     fn process_input(&mut self, input: HashMap<String, Data>) {
         if let Some(Data::String(prompt)) = input.get("prompt") {
             self.prompt = prompt.clone();

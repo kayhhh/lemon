@@ -4,7 +4,6 @@ pub enum Value {
     Bytes(Vec<u8>),
     F32(f32),
     ISize(isize),
-    None,
     String(String),
     USize(usize),
     Vec(Vec<Value>),
@@ -31,12 +30,6 @@ impl From<f32> for Value {
 impl From<isize> for Value {
     fn from(value: isize) -> Self {
         Value::ISize(value)
-    }
-}
-
-impl From<()> for Value {
-    fn from(_: ()) -> Self {
-        Value::None
     }
 }
 
@@ -97,17 +90,6 @@ impl TryFrom<Value> for isize {
     fn try_from(value: Value) -> Result<Self, Self::Error> {
         match value {
             Value::ISize(value) => Ok(value),
-            _ => Err(()),
-        }
-    }
-}
-
-impl TryFrom<Value> for () {
-    type Error = ();
-
-    fn try_from(value: Value) -> Result<Self, Self::Error> {
-        match value {
-            Value::None => Ok(()),
             _ => Err(()),
         }
     }

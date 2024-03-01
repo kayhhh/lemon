@@ -1,15 +1,13 @@
+use petgraph::graph::NodeIndex;
 use std::future::Future;
 use thiserror::Error;
 
-mod constant;
-mod delay;
 mod log;
+pub mod util;
 
-pub use constant::Constant;
-pub use delay::Delay;
-pub use log::Log;
+use crate::{Graph, Value};
 
-use crate::Value;
+use self::util::{input_stores, next_nodes, output_stores, previous_nodes};
 
 #[derive(Debug, Error)]
 pub enum NodeError {
@@ -19,16 +17,37 @@ pub enum NodeError {
     InternalError(String),
 }
 
-pub trait Node {
-    fn run(&mut self, input: Value) -> Box<dyn Future<Output = Result<Value, NodeError>> + Unpin>;
+pub trait AsyncNode {
+    fn run(
+        &self,
+        inputs: Vec<Value>,
+    ) -> Box<dyn Future<Output = Result<Vec<Value>, NodeError>> + Unpin>;
 }
 
-pub trait TypedNode<I: Into<Value>, O: TryFrom<Value>>: Node {
-    fn run_typed(&mut self, input: I) -> impl Future<Output = Result<O, NodeError>> {
-        async move {
-            let input = input.into();
-            let output_value = self.run(input.clone()).await?;
-            O::try_from(output_value.clone()).map_err(|_| NodeError::ConversionError(output_value))
-        }
+pub trait SyncNode {
+    fn run(&self, inputs: Vec<Value>) -> Result<Vec<Value>, NodeError>;
+}
+
+pub trait NodeInterface: Copy + Into<NodeIndex> {
+    fn previous_nodes(self, graph: &Graph) -> impl Iterator<Item = NodeIndex> + '_ {
+        previous_nodes(self.into(), graph)
     }
+
+    fn next_nodes(self, graph: &Graph) -> impl Iterator<Item = NodeIndex> + '_ {
+        next_nodes(self.into(), graph)
+    }
+
+    fn input_stores(self, graph: &Graph) -> impl Iterator<Item = NodeIndex> + '_ {
+        input_stores(self.into(), graph)
+    }
+
+    fn output_stores(self, graph: &Graph) -> impl Iterator<Item = NodeIndex> + '_ {
+        output_stores(self.into(), graph)
+    }
+}
+
+#[derive(Debug, Error)]
+pub enum SetStoreError {
+    #[error("No store found")]
+    NoStore,
 }
