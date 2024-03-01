@@ -2,29 +2,24 @@
 
 <!-- cargo-rdme start -->
 
-Async directed computation graphs.
+Async directed computation graphs, using [petgraph](https://crates.io/crates/petgraph).
 
 ## Usage
 
 ```rust
-use lemon_graph::{Engine, Graph, GraphEdge, GraphNode, nodes::Delay};
+use lemon_graph::{Graph, ExecutionStep, nodes::Log};
 
 #[tokio::main]
 async fn main() {
     let mut graph = Graph::new();
 
-    // Create a trigger, an entry point into the graph.
-    let trigger = graph.add_node(GraphNode::Trigger("start".to_string()));
+    // Create a log node and set its message.
+    let log = Log::new(&mut graph);
+    log.set_message(&mut graph, "Hello, world!".to_string());
 
-    // Create a delay node, which will wait for 0.1 seconds before continuing to the next node.
-    let delay = graph.add_node(Delay::new(0.1).into());
-
-    // Connect the trigger to the delay node.
-    graph.add_edge(trigger, delay, GraphEdge::Flow);
-
-    // Create an execution engine and execute the graph.
-    let mut engine = Engine(graph);
-    engine.execute("start").await;
+    // Execute the graph.
+    let step = ExecutionStep(log.0);
+    step.execute(&mut graph).await.unwrap();
 }
 ```
 
