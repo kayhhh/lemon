@@ -94,6 +94,7 @@
         apps = {
           generate-readme = flake-utils.lib.mkApp {
             drv = pkgs.writeScriptBin "generate-readme" ''
+              #!${pkgs.stdenv.shell}
               cd crates
 
               for folder in */; do
