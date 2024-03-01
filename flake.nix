@@ -50,7 +50,7 @@
 
         commonShell = {
           checks = self.checks.${localSystem};
-          packages = with pkgs; [ cargo-watch rust-analyzer ];
+          packages = with pkgs; [ cargo-rdme cargo-watch rust-analyzer ];
         };
 
         cargoArtifacts =
@@ -89,6 +89,15 @@
         checks = {
           inherit lemon-agent lemon-graph lemon-llm lemon-memory cargoClippy
             cargoDoc;
+        };
+
+        apps = {
+          generate-readme = flake-utils.lib.mkApp {
+            drv = pkgs.writeScriptBin "generate-readme" ''
+              cd crates/lemon-graph
+              cargo rdme
+            '';
+          };
         };
 
         packages = rec {

@@ -1,4 +1,7 @@
+//! Async directed computation graphs.
+//!
 //! # Usage
+//!
 //! ```
 //! use lemon_graph::{Engine, Graph, GraphEdge, GraphNode, nodes::Delay};
 //!

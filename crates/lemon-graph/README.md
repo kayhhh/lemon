@@ -1,3 +1,3 @@
 # lemon-graph
 
-Async directed computation graphs.
+<!-- cargo-rdme start -->
