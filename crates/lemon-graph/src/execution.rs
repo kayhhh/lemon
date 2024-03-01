@@ -122,8 +122,7 @@ mod tests {
 
         let step = ExecutionStep(node);
         let next_steps = step.execute(&mut graph).await.unwrap().collect::<Vec<_>>();
-
-        assert_eq!(next_steps.len(), 0);
+        assert!(next_steps.is_empty());
 
         let output_value = graph.node_weight(output).unwrap();
         let output_value = match output_value {
@@ -145,8 +144,7 @@ mod tests {
 
         let step = ExecutionStep(node);
         let next_steps = step.execute(&mut graph).await.unwrap().collect::<Vec<_>>();
-
-        assert_eq!(next_steps.len(), 0);
+        assert!(next_steps.is_empty());
 
         let output_value = graph.node_weight(output).unwrap();
         let output_value = match output_value {
