@@ -41,7 +41,7 @@ async fn main() {
     node_1
         .set_prompt(
             &mut graph,
-            "Write an LLM prompt to get a cat fact.".to_string(),
+            "Write an LLM prompt to get a cat fact, but write it backwards.".to_string(),
         )
         .unwrap();
 

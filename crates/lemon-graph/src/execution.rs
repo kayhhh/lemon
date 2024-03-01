@@ -21,18 +21,47 @@ impl ExecutionStep {
         graph: &'a mut Graph,
     ) -> Result<impl Iterator<Item = ExecutionStep> + 'a, ExecutionStepError> {
         // Read inputs
-        let mut inputs = graph
+        let inputs = graph
             .edges_directed(self.0, Direction::Incoming)
             .filter_map(|edge| match edge.weight() {
                 GraphEdge::DataMap(data_idx) => Some((*data_idx, edge.source())),
                 _ => None,
             })
-            .map(|(data_idx, source_idx)| {
-                let node = graph
+            .collect::<Vec<_>>();
+
+        let mut inputs = inputs
+            .into_iter()
+            .map(|(data_idx, source_idx)| -> Result<_, ExecutionStepError> {
+                // Update source from incoming DataFlow edges.
+                let mut new_value = None;
+
+                for edge in graph.edges_directed(source_idx, Direction::Incoming) {
+                    if let GraphEdge::DataFlow = edge.weight() {
+                        let source = edge.source();
+
+                        let source_weight = graph
+                            .node_weight(source)
+                            .ok_or(ExecutionStepError::NoWeight)?;
+
+                        let value = match source_weight {
+                            GraphNode::Store(value) => value,
+                            _ => return Err(ExecutionStepError::InvalidWeight),
+                        };
+
+                        new_value = Some(value.clone());
+                    }
+                }
+
+                if let Some(value) = new_value {
+                    graph[source_idx] = GraphNode::Store(value.clone());
+                    return Ok((data_idx, value));
+                }
+
+                let source_weight = graph
                     .node_weight(source_idx)
                     .ok_or(ExecutionStepError::NoWeight)?;
 
-                match node {
+                match source_weight {
                     GraphNode::Store(value) => Ok((data_idx, value.clone())),
                     _ => Err(ExecutionStepError::InvalidWeight),
                 }
