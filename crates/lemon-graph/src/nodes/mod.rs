@@ -5,6 +5,8 @@ use thiserror::Error;
 mod log;
 pub mod util;
 
+pub use log::Log;
+
 use crate::{Graph, Value};
 
 use self::util::{input_stores, next_nodes, output_stores, previous_nodes};

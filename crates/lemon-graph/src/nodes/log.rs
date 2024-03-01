@@ -44,7 +44,7 @@ impl Log {
     }
 }
 
-pub struct LogWeight;
+struct LogWeight;
 
 impl SyncNode for LogWeight {
     fn run(&self, inputs: Vec<Value>) -> Result<Vec<Value>, NodeError> {
