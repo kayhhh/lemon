@@ -1,4 +1,4 @@
-//! Async directed computation graphs.
+//! Async directed computation graphs, using [petgraph](https://crates.io/crates/petgraph).
 //!
 //! # Usage
 //!
