@@ -96,7 +96,7 @@ fn read_input(node_idx: NodeIndex, graph: &Graph) -> HashMap<String, Data> {
 
 #[cfg(test)]
 mod tests {
-    use crate::nodes::delay::Delay;
+    use crate::nodes::Delay;
 
     use super::*;
 

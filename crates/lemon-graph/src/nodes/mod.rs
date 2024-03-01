@@ -2,7 +2,9 @@ use std::{collections::HashMap, future::Future};
 
 use crate::Data;
 
-pub mod delay;
+mod delay;
+
+pub use delay::Delay;
 
 pub trait Node {
     /// Process input from the graph.
