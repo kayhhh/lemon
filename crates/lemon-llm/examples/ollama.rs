@@ -3,7 +3,7 @@ use std::sync::Arc;
 use lemon_graph::{nodes::Log, ExecutionStep, GraphEdge};
 use lemon_llm::{
     ollama::{OllamaBackend, OllamaModel},
-    LlmBackend, LlmNode, LlmWeight,
+    LlmBackend, Llm, LlmWeight,
 };
 use petgraph::Graph;
 use tracing::info;
@@ -35,13 +35,13 @@ async fn main() {
 
     // Create an initial LLM to generate a prompt for the next LLM.
     let backend = Arc::new(backend);
-    let node_1 = LlmNode::new(&mut graph, LlmWeight::new(backend.clone()));
+    let node_1 = Llm::new(&mut graph, LlmWeight::new(backend.clone()));
 
     // Manually set the prompt.
     node_1
         .set_prompt(
             &mut graph,
-            "Write an LLM prompt to get a cat fact, but write it backwards.".to_string(),
+            "Write an LLM prompt to get a cat fact, but write your prompt backwards.".to_string(),
         )
         .unwrap();
 
@@ -54,7 +54,7 @@ async fn main() {
     graph.add_edge(node_1_output, log_1_input, GraphEdge::DataFlow);
 
     // Create a second LLM to respond to the generated prompt.
-    let node_2 = LlmNode::new(&mut graph, LlmWeight::new(backend));
+    let node_2 = Llm::new(&mut graph, LlmWeight::new(backend));
     graph.add_edge(node_1.0, node_2.0, GraphEdge::ExecutionFlow);
 
     let node_2_input = node_2.prompt_store_idx(&graph).unwrap();

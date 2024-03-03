@@ -19,9 +19,9 @@ pub mod ollama;
 pub mod replicate;
 
 #[derive(Debug, Clone, Copy)]
-pub struct LlmNode(pub NodeIndex);
+pub struct Llm(pub NodeIndex);
 
-impl LlmNode {
+impl Llm {
     pub fn new<T: LlmBackend>(graph: &mut Graph, weight: LlmWeight<T>) -> Self {
         let index = graph.add_node(GraphNode::AsyncNode(Box::new(weight)));
 
