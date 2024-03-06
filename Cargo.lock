@@ -380,11 +380,11 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "lemon-agent"
-version = "0.0.0"
+version = "0.0.1"
 
 [[package]]
 name = "lemon-graph"
-version = "0.0.0"
+version = "0.0.1"
 dependencies = [
  "petgraph",
  "thiserror",
@@ -395,7 +395,7 @@ dependencies = [
 
 [[package]]
 name = "lemon-llm"
-version = "0.0.0"
+version = "0.0.1"
 dependencies = [
  "lemon-graph",
  "petgraph",
@@ -410,7 +410,7 @@ dependencies = [
 
 [[package]]
 name = "lemon-memory"
-version = "0.0.0"
+version = "0.0.1"
 
 [[package]]
 name = "libc"
