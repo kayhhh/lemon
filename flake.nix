@@ -30,8 +30,8 @@
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
 
         commonArgs = {
-          src = lib.cleanSource ./.;
-
+          pname = "lemon";
+          src = craneLib.cleanCargoSource (craneLib.path ./.);
           strictDeps = true;
 
           buildInputs = with pkgs;
@@ -56,15 +56,17 @@
         cargoArtifacts =
           craneLib.buildDepsOnly (commonArgs // { pname = "deps"; });
 
-        cargoClippy = craneLib.cargoClippy (commonArgs // {
-          inherit cargoArtifacts;
-          pname = "clippy";
-        });
+        cargoClippy =
+          craneLib.cargoClippy (commonArgs // { inherit cargoArtifacts; });
 
-        cargoDoc = craneLib.cargoDoc (commonArgs // {
-          inherit cargoArtifacts;
-          pname = "doc";
-        });
+        cargoDoc =
+          craneLib.cargoDoc (commonArgs // { inherit cargoArtifacts; });
+
+        cargoFmt =
+          craneLib.cargoFmt (commonArgs // { inherit cargoArtifacts; });
+
+        cargoTest =
+          craneLib.cargoTest (commonArgs // { inherit cargoArtifacts; });
 
         lemon-agent = craneLib.buildPackage (commonArgs // {
           inherit cargoArtifacts;
@@ -86,15 +88,11 @@
           pname = "lemon-memory";
         });
       in {
-        checks = {
-          inherit lemon-agent lemon-graph lemon-llm lemon-memory cargoClippy
-            cargoDoc;
-        };
+        checks = { inherit cargoClippy cargoDoc cargoFmt cargoTest; };
 
         apps = {
           generate-readme = flake-utils.lib.mkApp {
-            drv = pkgs.writeScriptBin "generate-readme" ''
-              #!${pkgs.stdenv.shell}
+            drv = pkgs.writeShellScriptBin "generate-readme" ''
               cd crates
 
               for folder in */; do
@@ -104,15 +102,15 @@
           };
         };
 
-        packages = rec {
-          agent = lemon-agent;
-          graph = lemon-graph;
-          llm = lemon-llm;
-          memory = lemon-memory;
+        packages = {
+          lemon-agent = lemon-agent;
+          lemon-graph = lemon-graph;
+          lemon-llm = lemon-llm;
+          lemon-memory = lemon-memory;
 
           default = pkgs.symlinkJoin {
             name = "all";
-            paths = [ agent graph llm memory ];
+            paths = [ lemon-agent lemon-graph lemon-llm lemon-memory ];
           };
         };
 
