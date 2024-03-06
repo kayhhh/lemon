@@ -123,8 +123,8 @@ mod tests {
         let mut graph = Graph::new();
         let node = Llm::new(&mut graph, weight);
 
-        node.set_prompt(&mut graph, TEST_PROMPT.to_string())
-            .unwrap();
+        let prompt = node.prompt(&graph).unwrap();
+        prompt.set_value(&mut graph, TEST_PROMPT.to_string().into());
 
         let step = ExecutionStep(node.0);
         let _ = step.execute(&mut graph).await.unwrap();

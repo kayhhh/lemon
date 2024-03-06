@@ -3,11 +3,19 @@ use tracing::info;
 
 use crate::{Graph, GraphEdge, GraphNode, Value};
 
-use super::{util::input_stores, NodeError, SetStoreError, SyncNode};
+use super::{GetStoreError, NodeError, NodeWrapper, StoreWrapper, SyncNode};
 
 /// Logs a provided message.
 #[derive(Debug, Clone, Copy)]
 pub struct Log(pub NodeIndex);
+
+impl From<Log> for NodeIndex {
+    fn from(value: Log) -> Self {
+        value.0
+    }
+}
+
+impl NodeWrapper for Log {}
 
 impl Log {
     pub fn new(graph: &mut Graph) -> Self {
@@ -19,18 +27,10 @@ impl Log {
         Self(index)
     }
 
-    /// Get the index of the message input.
-    pub fn message_store_idx(&self, graph: &Graph) -> Result<NodeIndex, SetStoreError> {
-        input_stores(self.0, graph)
+    pub fn message(&self, graph: &Graph) -> Result<StoreWrapper, GetStoreError> {
+        self.input_stores(graph)
             .next()
-            .ok_or(SetStoreError::NoStore)
-    }
-
-    /// Sets the value of the input store.
-    pub fn set_message(&self, graph: &mut Graph, message: String) -> Result<(), SetStoreError> {
-        let input_idx = self.message_store_idx(graph)?;
-        graph[input_idx] = GraphNode::Store(Value::String(message));
-        Ok(())
+            .ok_or(GetStoreError::NoStore)
     }
 }
 
@@ -79,8 +79,8 @@ mod tests {
         let mut graph = Graph::new();
         let log = Log::new(&mut graph);
 
-        log.set_message(&mut graph, "Hello, world!".to_string())
-            .unwrap();
+        let message = log.message(&graph).unwrap();
+        message.set_value(&mut graph, "Hello, world!".to_string().into());
 
         let step = ExecutionStep(log.0);
 

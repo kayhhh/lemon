@@ -3,10 +3,7 @@
 use std::{future::Future, sync::Arc};
 
 use lemon_graph::{
-    nodes::{
-        util::{input_stores, output_stores},
-        AsyncNode, NodeError, SetStoreError,
-    },
+    nodes::{AsyncNode, GetStoreError, NodeError, NodeWrapper, StoreWrapper},
     Graph, GraphEdge, GraphNode, Value,
 };
 use petgraph::graph::NodeIndex;
@@ -21,6 +18,14 @@ pub mod replicate;
 #[derive(Debug, Clone, Copy)]
 pub struct Llm(pub NodeIndex);
 
+impl From<Llm> for NodeIndex {
+    fn from(value: Llm) -> Self {
+        value.0
+    }
+}
+
+impl NodeWrapper for Llm {}
+
 impl Llm {
     pub fn new<T: LlmBackend>(graph: &mut Graph, weight: LlmWeight<T>) -> Self {
         let index = graph.add_node(GraphNode::AsyncNode(Box::new(weight)));
@@ -34,25 +39,16 @@ impl Llm {
         Self(index)
     }
 
-    /// Get the index of the prompt input.
-    pub fn prompt_store_idx(&self, graph: &Graph) -> Result<NodeIndex, SetStoreError> {
-        input_stores(self.0, graph)
+    pub fn prompt(&self, graph: &Graph) -> Result<StoreWrapper, GetStoreError> {
+        self.input_stores(graph)
             .next()
-            .ok_or(SetStoreError::NoStore)
+            .ok_or(GetStoreError::NoStore)
     }
 
-    /// Get the index of the response output.
-    pub fn response_store_idx(&self, graph: &Graph) -> Result<NodeIndex, SetStoreError> {
-        output_stores(self.0, graph)
+    pub fn response(&self, graph: &Graph) -> Result<StoreWrapper, GetStoreError> {
+        self.output_stores(graph)
             .next()
-            .ok_or(SetStoreError::NoStore)
-    }
-
-    /// Manually set the prompt.
-    pub fn set_prompt(&self, graph: &mut Graph, message: String) -> Result<(), SetStoreError> {
-        let input_idx = self.prompt_store_idx(graph)?;
-        graph[input_idx] = GraphNode::Store(Value::String(message));
-        Ok(())
+            .ok_or(GetStoreError::NoStore)
     }
 }
 

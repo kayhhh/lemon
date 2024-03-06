@@ -11,7 +11,8 @@
 //!
 //!     // Create a log node and set its message.
 //!     let log = Log::new(&mut graph);
-//!     log.set_message(&mut graph, "Hello, world!".to_string());
+//!     let message = log.message(&graph).unwrap();
+//!     message.set_value(&mut graph, "Hello, world!".to_string().into());
 //!
 //!     // Execute the graph.
 //!     let step = ExecutionStep(log.0);
