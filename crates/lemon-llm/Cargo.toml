@@ -13,7 +13,7 @@ ollama = ["dep:reqwest", "dep:serde_json"]
 replicate = ["dep:replicate-rust"]
 
 [dependencies]
-lemon-graph = { path = "../lemon-graph" }
+lemon-graph.workspace = true
 petgraph.workspace = true
 thiserror.workspace = true
 tracing.workspace = true
