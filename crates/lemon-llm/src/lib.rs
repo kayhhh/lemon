@@ -10,7 +10,7 @@
 //!
 //! #[tokio::main]
 //! async fn main() {
-//!    let mut graph = Graph::new();
+//!    let mut graph = Graph::default();
 //!
 //!    // Create a new Ollama backend.
 //!    let backend = Arc::new(OllamaBackend {

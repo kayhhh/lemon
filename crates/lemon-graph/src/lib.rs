@@ -7,7 +7,7 @@
 //!
 //! #[tokio::main]
 //! async fn main() {
-//!     let mut graph = Graph::new();
+//!     let mut graph = Graph::default();
 //!
 //!     // Create a log node and set its message.
 //!     let log = LogNode::new(&mut graph);

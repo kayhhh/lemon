@@ -76,7 +76,7 @@ mod tests {
     #[tokio::test]
     #[traced_test]
     async fn test_log() {
-        let mut graph = Graph::new();
+        let mut graph = Graph::default();
         let log = LogNode::new(&mut graph);
 
         let message = log.message(&graph).unwrap();

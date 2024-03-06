@@ -141,7 +141,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_sync_execution() {
-        let mut graph = Graph::new();
+        let mut graph = Graph::default();
 
         let input = graph.add_node(GraphNode::Store(Value::String("Hello, world!".to_string())));
         let node = graph.add_node(GraphNode::SyncNode(Box::new(TestSync)));
@@ -163,7 +163,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_async_execution() {
-        let mut graph = Graph::new();
+        let mut graph = Graph::default();
 
         let input = graph.add_node(GraphNode::Store(Value::String("Hello, world!".to_string())));
         let node = graph.add_node(GraphNode::AsyncNode(Box::new(TestAsync)));

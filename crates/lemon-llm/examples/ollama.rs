@@ -34,7 +34,7 @@ async fn main() {
     info!("{}", response);
 
     // Or you can use the backend within a graph.
-    let mut graph = Graph::new();
+    let mut graph = Graph::default();
 
     // Create an initial LLM to generate a prompt for the next LLM.
     let backend = Arc::new(backend);
