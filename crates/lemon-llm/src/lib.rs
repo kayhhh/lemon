@@ -1,6 +1,6 @@
 //! LLM nodes for [lemon-graph](https://github.com/unavi-xyz/lemon/tree/main/crates/lemon-graph).
 //!
-//! # Usage
+//! ## Usage
 //!
 //! ```
 //! use std::sync::Arc;
