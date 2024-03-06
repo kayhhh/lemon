@@ -84,7 +84,7 @@ mod tests {
     use lemon_graph::{nodes::AsyncNode, ExecutionStep, Graph, GraphNode, Value};
     use petgraph::Direction;
 
-    use crate::{Llm, LlmWeight};
+    use crate::{LlmNode, LlmWeight};
 
     use super::*;
 
@@ -121,7 +121,7 @@ mod tests {
         };
 
         let mut graph = Graph::new();
-        let node = Llm::new(&mut graph, weight);
+        let node = LlmNode::new(&mut graph, weight);
 
         let prompt = node.prompt(&graph).unwrap();
         prompt.set_value(&mut graph, TEST_PROMPT.to_string().into());

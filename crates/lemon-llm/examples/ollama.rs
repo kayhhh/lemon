@@ -1,12 +1,12 @@
 use std::sync::Arc;
 
 use lemon_graph::{
-    nodes::{Log, NodeWrapper},
+    nodes::{LogNode, NodeWrapper},
     ExecutionStep,
 };
 use lemon_llm::{
     ollama::{OllamaBackend, OllamaModel},
-    Llm, LlmBackend, LlmWeight,
+    LlmBackend, LlmNode, LlmWeight,
 };
 use petgraph::Graph;
 use tracing::info;
@@ -38,9 +38,9 @@ async fn main() {
 
     // Create an initial LLM to generate a prompt for the next LLM.
     let backend = Arc::new(backend);
-    let llm1 = Llm::new(&mut graph, LlmWeight::new(backend.clone()));
+    let llm_1 = LlmNode::new(&mut graph, LlmWeight::new(backend.clone()));
 
-    let prompt = llm1.prompt(&graph).unwrap();
+    let prompt = llm_1.prompt(&graph).unwrap();
     prompt.set_value(
         &mut graph,
         "Write an LLM prompt to get a cat fact, but write your prompt backwards."
@@ -48,37 +48,37 @@ async fn main() {
             .into(),
     );
 
-    let response = llm1.response(&graph).unwrap();
+    let response = llm_1.response(&graph).unwrap();
 
     // Log the response.
     {
-        let log = Log::new(&mut graph);
-        log.run_after(&mut graph, llm1.0);
+        let log = LogNode::new(&mut graph);
+        log.run_after(&mut graph, llm_1.0);
 
-        let log_message = log.message(&graph).unwrap();
-        log_message.set_input(&mut graph, Some(response));
+        let message = log.message(&graph).unwrap();
+        message.set_input(&mut graph, Some(response));
     }
 
     // Create a second LLM to respond to the generated prompt.
-    let llm2 = Llm::new(&mut graph, LlmWeight::new(backend));
-    llm2.run_after(&mut graph, llm1.0);
+    let llm_2 = LlmNode::new(&mut graph, LlmWeight::new(backend));
+    llm_2.run_after(&mut graph, llm_1.0);
 
-    let prompt = llm2.prompt(&graph).unwrap();
+    let prompt = llm_2.prompt(&graph).unwrap();
     prompt.set_input(&mut graph, Some(response));
 
-    let response = llm2.response(&graph).unwrap();
+    let response = llm_2.response(&graph).unwrap();
 
     // Log the response.
     {
-        let log = Log::new(&mut graph);
-        log.run_after(&mut graph, llm2.0);
+        let log = LogNode::new(&mut graph);
+        log.run_after(&mut graph, llm_2.0);
 
-        let log_message = log.message(&graph).unwrap();
-        log_message.set_input(&mut graph, Some(response));
+        let message = log.message(&graph).unwrap();
+        message.set_input(&mut graph, Some(response));
     }
 
     // Execute the graph.
-    let mut steps = vec![ExecutionStep(llm1.0)];
+    let mut steps = vec![ExecutionStep(llm_1.0)];
 
     while let Some(step) = steps.pop() {
         let next_steps = step.execute(&mut graph).await.unwrap();

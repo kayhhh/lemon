@@ -4,7 +4,7 @@ use thiserror::Error;
 
 mod log;
 
-pub use log::Log;
+pub use log::LogNode;
 
 use crate::{Graph, GraphEdge, GraphNode, Value};
 

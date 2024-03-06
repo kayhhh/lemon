@@ -7,17 +7,17 @@ use super::{GetStoreError, NodeError, NodeWrapper, StoreWrapper, SyncNode};
 
 /// Logs a provided message.
 #[derive(Debug, Clone, Copy)]
-pub struct Log(pub NodeIndex);
+pub struct LogNode(pub NodeIndex);
 
-impl From<Log> for NodeIndex {
-    fn from(value: Log) -> Self {
+impl From<LogNode> for NodeIndex {
+    fn from(value: LogNode) -> Self {
         value.0
     }
 }
 
-impl NodeWrapper for Log {}
+impl NodeWrapper for LogNode {}
 
-impl Log {
+impl LogNode {
     pub fn new(graph: &mut Graph) -> Self {
         let index = graph.add_node(GraphNode::SyncNode(Box::new(LogWeight)));
 
@@ -77,7 +77,7 @@ mod tests {
     #[traced_test]
     async fn test_log() {
         let mut graph = Graph::new();
-        let log = Log::new(&mut graph);
+        let log = LogNode::new(&mut graph);
 
         let message = log.message(&graph).unwrap();
         message.set_value(&mut graph, "Hello, world!".to_string().into());

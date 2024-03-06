@@ -16,17 +16,17 @@ pub mod ollama;
 pub mod replicate;
 
 #[derive(Debug, Clone, Copy)]
-pub struct Llm(pub NodeIndex);
+pub struct LlmNode(pub NodeIndex);
 
-impl From<Llm> for NodeIndex {
-    fn from(value: Llm) -> Self {
+impl From<LlmNode> for NodeIndex {
+    fn from(value: LlmNode) -> Self {
         value.0
     }
 }
 
-impl NodeWrapper for Llm {}
+impl NodeWrapper for LlmNode {}
 
-impl Llm {
+impl LlmNode {
     pub fn new<T: LlmBackend>(graph: &mut Graph, weight: LlmWeight<T>) -> Self {
         let index = graph.add_node(GraphNode::AsyncNode(Box::new(weight)));
 
