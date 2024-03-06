@@ -2,7 +2,7 @@ use serde_json::json;
 
 use crate::{GenerateError, LlmBackend};
 
-const OLLAMA_URL: &str = "http://localhost:11434";
+const DEFAULT_OLLAMA_URL: &str = "http://localhost:11434";
 
 pub struct OllamaBackend {
     pub model: OllamaModel,
@@ -13,7 +13,7 @@ impl Default for OllamaBackend {
     fn default() -> Self {
         Self {
             model: OllamaModel::default(),
-            url: OLLAMA_URL.to_string(),
+            url: DEFAULT_OLLAMA_URL.to_string(),
         }
     }
 }
@@ -40,7 +40,7 @@ impl LlmBackend for OllamaBackend {
     async fn generate(&self, prompt: &str) -> Result<String, GenerateError> {
         // Pull the model if it's not already downloaded.
         reqwest::Client::new()
-            .post(format!("{}/api/pull", OLLAMA_URL))
+            .post(format!("{}/api/pull", self.url))
             .json(&json!({
                 "name": self.model.as_str(),
             }))
@@ -50,7 +50,7 @@ impl LlmBackend for OllamaBackend {
 
         // Run the model.
         let response = reqwest::Client::new()
-            .post(format!("{}/api/generate", OLLAMA_URL))
+            .post(format!("{}/api/generate", self.url))
             .json(&json!({
                 "model": self.model.as_str(),
                 "prompt": prompt,
