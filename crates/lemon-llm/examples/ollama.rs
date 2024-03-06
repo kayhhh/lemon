@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use lemon_graph::{
     nodes::{LogNode, NodeWrapper},
-    ExecutionStep,
+    Executor,
 };
 use lemon_llm::{
     ollama::{OllamaBackend, OllamaModel},
@@ -78,10 +78,5 @@ async fn main() {
     }
 
     // Execute the graph.
-    let mut steps = vec![ExecutionStep(llm_1.0)];
-
-    while let Some(step) = steps.pop() {
-        let next_steps = step.execute(&mut graph).await.unwrap();
-        steps.extend(next_steps);
-    }
+    Executor::execute(&mut graph, llm_1.0).await.unwrap();
 }

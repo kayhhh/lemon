@@ -3,20 +3,27 @@
 //! # Usage
 //!
 //! ```
-//! use lemon_graph::{Graph, ExecutionStep, nodes::Log};
+//! use lemon_graph::{Graph, Executor, nodes::{NodeWrapper, LogNode}};
 //!
 //! #[tokio::main]
 //! async fn main() {
 //!     let mut graph = Graph::new();
 //!
 //!     // Create a log node and set its message.
-//!     let log = Log::new(&mut graph);
+//!     let log = LogNode::new(&mut graph);
 //!     let message = log.message(&graph).unwrap();
 //!     message.set_value(&mut graph, "Hello, world!".to_string().into());
 //!
+//!     // Create a second log node to run after the first.
+//!     let log_2 = LogNode::new(&mut graph);
+//!     log_2.run_after(&mut graph, log.0);
+//!
+//!     // Use the first log's message as input to the second log's message.
+//!     let message_2 = log_2.message(&graph).unwrap();
+//!     message_2.set_input(&mut graph, Some(message));
+//!
 //!     // Execute the graph.
-//!     let step = ExecutionStep(log.0);
-//!     step.execute(&mut graph).await.unwrap();
+//!     Executor::execute(&mut graph, log.0).await.unwrap();
 //! }
 //! ```
 
@@ -27,7 +34,7 @@ mod execution;
 pub mod nodes;
 mod value;
 
-pub use execution::{ExecutionStep, ExecutionStepError};
+pub use execution::*;
 pub use value::Value;
 
 #[derive(Debug, Clone, Copy)]
@@ -46,7 +53,7 @@ pub enum GraphNode {
     AsyncNode(Box<dyn AsyncNode>),
     /// Executable sync node.
     SyncNode(Box<dyn SyncNode>),
-    /// Used as an intermediate store for data between nodes.
+    /// Used as an intermediary store for data between nodes.
     Store(Value),
 }
 
