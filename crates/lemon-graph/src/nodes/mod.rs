@@ -2,9 +2,11 @@ use petgraph::{graph::NodeIndex, visit::EdgeRef, Direction};
 use std::future::Future;
 use thiserror::Error;
 
+mod callback;
 mod log;
 mod prompt;
 
+pub use callback::CallbackNode;
 pub use log::LogNode;
 pub use prompt::PromptNode;
 
