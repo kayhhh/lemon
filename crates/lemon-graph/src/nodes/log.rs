@@ -42,12 +42,7 @@ impl SyncNode for LogWeight {
             .first()
             .ok_or(NodeError::InternalError("No input".to_string()))?;
 
-        let value = match input {
-            Value::String(value) => value,
-            _ => return Err(NodeError::ConversionError(input.clone())),
-        };
-
-        info!("{}", value);
+        info!("{}", input);
 
         Ok(vec![])
     }

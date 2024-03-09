@@ -1,3 +1,5 @@
+use std::fmt::{Display, Formatter};
+
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum Value {
     Bool(bool),
@@ -7,6 +9,20 @@ pub enum Value {
     String(String),
     USize(usize),
     Vec(Vec<Value>),
+}
+
+impl Display for Value {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Value::Bool(value) => write!(f, "{}", value),
+            Value::Bytes(value) => write!(f, "{:?}", value),
+            Value::F32(value) => write!(f, "{}", value),
+            Value::ISize(value) => write!(f, "{}", value),
+            Value::String(value) => write!(f, "{}", value),
+            Value::USize(value) => write!(f, "{}", value),
+            Value::Vec(value) => write!(f, "{:?}", value),
+        }
+    }
 }
 
 impl From<bool> for Value {
