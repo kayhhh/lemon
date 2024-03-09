@@ -1,4 +1,5 @@
 use serde_json::json;
+use tracing::debug;
 
 use crate::{GenerateError, LlmBackend};
 
@@ -69,6 +70,7 @@ impl LlmBackend for OllamaBackend {
             .map(|line| {
                 // Extract the text from the JSON response.
                 let json: serde_json::Value = serde_json::from_str(line).unwrap();
+                debug!("JSON: {:?}", json);
                 json["response"].as_str().unwrap_or_default().to_string()
             })
             .collect::<String>()
@@ -90,10 +92,12 @@ mod tests {
     #[traced_test]
     async fn test_ollama_backend() {
         let backend = OllamaBackend::default();
-        let response = backend.generate(TEST_PROMPT).await.unwrap();
+
+        let mut response = backend.generate(TEST_PROMPT).await.unwrap();
+        response.make_ascii_lowercase();
 
         debug!("Response: {}", response);
 
-        assert!(response.contains('B') || response.contains('b'));
+        assert!(response.contains('b'));
     }
 }
