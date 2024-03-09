@@ -16,6 +16,7 @@ petgraph = { version = "0.6.4", default-features = false }
 thiserror = "1.0.57"
 tokio = { version = "1.36.0", features = ["full"] }
 tracing = "0.1.40"
+tracing-test = "0.2.4"
 
 [profile.release]
 lto = true

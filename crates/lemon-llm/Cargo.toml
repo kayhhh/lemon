@@ -25,3 +25,4 @@ serde_json = { version = "1.0.114", optional = true }
 [dev-dependencies]
 tokio.workspace = true
 tracing-subscriber = "0.3.18"
+tracing-test.workspace = true
