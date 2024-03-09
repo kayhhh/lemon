@@ -4,7 +4,7 @@ use crate::{Graph, GraphEdge, GraphNode, Value};
 
 use super::{GetStoreError, NodeError, NodeWrapper, StoreWrapper, SyncNode};
 
-/// Callbacks a provided message.
+/// General purpose node that runs a provided callback.
 #[derive(Debug, Clone, Copy)]
 pub struct CallbackNode(pub NodeIndex);
 

@@ -3,27 +3,30 @@
 //! # Usage
 //!
 //! ```
-//! use lemon_graph::{Graph, Executor, nodes::{NodeWrapper, LogNode}};
+//! use lemon_graph::{Executor, Graph, Value, nodes::{CallbackNode, LogNode, NodeWrapper}};
 //!
 //! #[tokio::main]
 //! async fn main() {
 //!     let mut graph = Graph::default();
 //!
-//!     // Create a log node and set its message.
+//!     // Create a callback node to generate some data.
+//!     let callback = CallbackNode::new(&mut graph, |_| {
+//!         let time = std::time::SystemTime::now();
+//!         let time = time.duration_since(std::time::UNIX_EPOCH).unwrap().as_secs();
+//!         Value::String(format!("Current time: {}", time))
+//!     });
+//!
+//!     // Create a log node.
 //!     let log = LogNode::new(&mut graph);
+//!     log.run_after(&mut graph, callback.0);
+//!
+//!     // Set the log message to the callback output.
 //!     let message = log.message(&graph).unwrap();
-//!     message.set_value(&mut graph, "Hello, world!".to_string().into());
-//!
-//!     // Create a second log node to run after the first.
-//!     let log_2 = LogNode::new(&mut graph);
-//!     log_2.run_after(&mut graph, log.0);
-//!
-//!     // Use the first log's message as input to the second log's message.
-//!     let message_2 = log_2.message(&graph).unwrap();
-//!     message_2.set_input(&mut graph, Some(message));
+//!     let callback_output = callback.output(&graph).unwrap();
+//!     message.set_input(&mut graph, Some(callback_output));
 //!
 //!     // Execute the graph.
-//!     Executor::execute(&mut graph, log.0).await.unwrap();
+//!     Executor::execute(&mut graph, callback.0).await.unwrap();
 //! }
 //! ```
 
