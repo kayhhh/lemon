@@ -45,6 +45,7 @@
             nodePackages.prettier
             ollama
             pkg-config
+            qdrant
           ];
         };
 
@@ -128,6 +129,25 @@
                 echo "Shutting down Ollama"
                 kill -9 $OLLAMA_PID
                 wait $OLLAMA_PID
+              }
+
+              trap finish EXIT
+
+              $SHELL
+            '';
+          });
+          qdrant = craneLib.devShell (commonShell // {
+            shellHook = ''
+              ${pkgs.qdrant}/bin/qdrant > /dev/null 2>&1 &
+              QDRANT_PID=$!
+
+              echo "Qdrant is running with PID $QDRANT_PID"
+
+              finish()
+              {
+                echo "Shutting down Qdrant"
+                kill -9 $QDRANT_PID
+                wait $QDRANT_PID
               }
 
               trap finish EXIT

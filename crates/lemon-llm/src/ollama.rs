@@ -76,3 +76,17 @@ impl LlmBackend for OllamaBackend {
             .to_string())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const TEST_PROMPT: &str = "What letter comes after A?";
+
+    #[tokio::test]
+    async fn test_ollama_backend() {
+        let backend = OllamaBackend::default();
+        let response = backend.generate(TEST_PROMPT).await.unwrap();
+        assert!(response.contains('B') || response.contains('b'));
+    }
+}
