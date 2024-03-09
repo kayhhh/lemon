@@ -2,10 +2,13 @@
 //!
 //! ## Usage
 //!
+//! In this example we create a basic chat app.
+//! We take user input, send it to an LLM, print the response, and repeat.
+//!
 //! ```
 //! use std::sync::Arc;
 //!
-//! use lemon_graph::{Graph, Executor, nodes::{NodeWrapper, LogNode}};
+//! use lemon_graph::{Graph, Executor, nodes::{NodeWrapper, PromptNode}};
 //! use lemon_llm::{ollama::{OllamaBackend, OllamaModel}, LlmBackend, LlmNode, LlmWeight};
 //!
 //! #[tokio::main]
@@ -18,27 +21,28 @@
 //!        ..Default::default()
 //!    });
 //!
-//!    // Create an llm node, using our Ollama backend.
+//!    // Create an LLM node, using our Ollama backend.
 //!    let llm = LlmNode::new(&mut graph, LlmWeight::new(backend.clone()));
 //!
-//!    // Set the input manually.
-//!    let input = llm.input(&graph).unwrap();
-//!    input.set_value(
-//!         &mut graph,
-//!         "Tell me your favorite lemon fact.".to_string().into(),
-//!    );
+//!    // Create a prompt node to get user input.
+//!    let prompt = PromptNode::new(&mut graph);
 //!
-//!    // Connect the output to a log node.
-//!    let output = llm.output(&graph).unwrap();
+//!    // Run each node in a cycle.
+//!    llm.run_after(&mut graph, prompt.0);
+//!    prompt.run_after(&mut graph, llm.0);
 //!
-//!    let log = LogNode::new(&mut graph);
-//!    log.run_after(&mut graph, llm.0);
+//!    // Connect the LLM output -> prompt input.
+//!    let llm_output = llm.output(&graph).unwrap();
+//!    let prompt_input = prompt.input(&graph).unwrap();
+//!    prompt_input.set_input(&mut graph, Some(llm_output));
 //!
-//!    let message = log.message(&graph).unwrap();
-//!    message.set_input(&mut graph, Some(output));
+//!    // Connect the prompt output -> LLM input.
+//!    let prompt_output = prompt.output(&graph).unwrap();
+//!    let llm_input = llm.input(&graph).unwrap();
+//!    llm_input.set_input(&mut graph, Some(prompt_output));
 //!
 //!    // Execute the graph.
-//!    // Executor::execute(&mut graph, llm.0).await.unwrap();
+//!    // Executor::execute(&mut graph, prompt.0).await.unwrap();
 //! }
 //! ```
 
