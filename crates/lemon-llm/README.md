@@ -21,12 +21,12 @@ async fn main() {
 
    // Create a new Ollama backend.
    let backend = Arc::new(OllamaBackend {
-       model: OllamaModel::Mistral7B,
+       model: OllamaModel::Mistral,
        ..Default::default()
    });
 
    // Create an LLM node, using our Ollama backend.
-   let llm = LlmNode::new(&mut graph, LlmWeight::new(backend.clone()));
+   let llm = LlmNode::new(&mut graph, LlmWeight::new(backend));
 
    // Create a prompt node to get user input.
    let prompt = PromptNode::new(&mut graph);
