@@ -35,7 +35,7 @@ async fn main() {
             _ => panic!("Invalid input"),
         };
 
-        let out = format!("> {}", input);
+        let out = format!("\n> {}\n", input);
 
         Value::String(out)
     });
