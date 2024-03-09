@@ -40,11 +40,6 @@ async fn main() {
         Value::String(out)
     });
 
-    // Create the execution flow.
-    llm.run_after(&mut graph, prompt.0);
-    format.run_after(&mut graph, llm.0);
-    prompt.run_after(&mut graph, format.0);
-
     // Connect the LLM output -> format input.
     let format_input = format.input(&graph).unwrap();
     let llm_output = llm.output(&graph).unwrap();
@@ -59,6 +54,11 @@ async fn main() {
     let prompt_output = prompt.output(&graph).unwrap();
     let llm_input = llm.input(&graph).unwrap();
     llm_input.set_input(&mut graph, Some(prompt_output));
+
+    // Set the execution flow.
+    llm.run_after(&mut graph, prompt.0);
+    format.run_after(&mut graph, llm.0);
+    prompt.run_after(&mut graph, format.0);
 
     // Execute the graph.
     Executor::execute(&mut graph, prompt.0).await.unwrap();
