@@ -17,7 +17,7 @@
 //!
 //!    // Create a new Ollama backend.
 //!    let backend = Arc::new(OllamaBackend {
-//!        model: OllamaModel::Mistral7B,
+//!        model: OllamaModel::Mistral,
 //!        ..Default::default()
 //!    });
 //!

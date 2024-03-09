@@ -33,6 +33,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5ad32ce52e4161730f7098c077cd2ed6229b5804ccf99e5366be1ab72a98b4e1"
 
 [[package]]
+name = "async-recursion"
+version = "1.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5fd55a5ba1179988837d24ab4c7cc8ed6efdeff578ede0416b4225a5fca35bd0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.49",
+]
+
+[[package]]
 name = "async-stream"
 version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -568,10 +579,13 @@ dependencies = [
 name = "lemon-llm"
 version = "0.0.1"
 dependencies = [
+ "async-recursion",
+ "futures-util",
  "lemon-graph",
  "petgraph",
  "replicate-rust",
  "reqwest",
+ "serde",
  "serde_json",
  "thiserror",
  "tokio",

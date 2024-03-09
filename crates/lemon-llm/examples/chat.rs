@@ -20,7 +20,7 @@ async fn main() {
 
     // Create an LLM node.
     let backend = Arc::new(OllamaBackend {
-        model: OllamaModel::Mistral7B,
+        model: OllamaModel::Mistral,
         ..Default::default()
     });
     let llm = LlmNode::new(&mut graph, LlmWeight::new(backend));
