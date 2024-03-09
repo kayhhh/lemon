@@ -31,7 +31,7 @@ async fn main() {
     // Create a callback node to format the LLM output.
     let format = CallbackNode::new(&mut graph, |input| {
         let input = match input {
-            lemon_graph::Value::String(value) => value,
+            Value::String(value) => value,
             _ => panic!("Invalid input"),
         };
 
