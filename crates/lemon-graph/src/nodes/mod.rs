@@ -3,8 +3,10 @@ use std::future::Future;
 use thiserror::Error;
 
 mod log;
+mod prompt;
 
 pub use log::LogNode;
+pub use prompt::PromptNode;
 
 use crate::{Graph, GraphEdge, GraphNode, Value};
 

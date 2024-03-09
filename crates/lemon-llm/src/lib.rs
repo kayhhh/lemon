@@ -21,21 +21,21 @@
 //!    // Create an llm node, using our Ollama backend.
 //!    let llm = LlmNode::new(&mut graph, LlmWeight::new(backend.clone()));
 //!
-//!    // Set the prompt manually.
-//!    let prompt = llm.prompt(&graph).unwrap();
-//!    prompt.set_value(
+//!    // Set the input manually.
+//!    let input = llm.input(&graph).unwrap();
+//!    input.set_value(
 //!         &mut graph,
 //!         "Tell me your favorite lemon fact.".to_string().into(),
 //!    );
 //!
-//!    // Connect the reponse to a log node.
-//!    let response = llm.response(&graph).unwrap();
+//!    // Connect the output to a log node.
+//!    let output = llm.output(&graph).unwrap();
 //!
 //!    let log = LogNode::new(&mut graph);
 //!    log.run_after(&mut graph, llm.0);
 //!
 //!    let message = log.message(&graph).unwrap();
-//!    message.set_input(&mut graph, Some(response));
+//!    message.set_input(&mut graph, Some(output));
 //!
 //!    // Execute the graph.
 //!    // Executor::execute(&mut graph, llm.0).await.unwrap();
@@ -81,13 +81,13 @@ impl LlmNode {
         Self(index)
     }
 
-    pub fn prompt(&self, graph: &Graph) -> Result<StoreWrapper, GetStoreError> {
+    pub fn input(&self, graph: &Graph) -> Result<StoreWrapper, GetStoreError> {
         self.input_stores(graph)
             .next()
             .ok_or(GetStoreError::NoStore)
     }
 
-    pub fn response(&self, graph: &Graph) -> Result<StoreWrapper, GetStoreError> {
+    pub fn output(&self, graph: &Graph) -> Result<StoreWrapper, GetStoreError> {
         self.output_stores(graph)
             .next()
             .ok_or(GetStoreError::NoStore)

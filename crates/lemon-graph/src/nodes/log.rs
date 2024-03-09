@@ -57,7 +57,7 @@ impl SyncNode for LogWeight {
 mod tests {
     use tracing_test::traced_test;
 
-    use crate::execution::ExecutionStep;
+    use crate::Executor;
 
     use super::*;
 
@@ -82,9 +82,7 @@ mod tests {
         let message = log.message(&graph).unwrap();
         message.set_value(&mut graph, "Hello, world!".to_string().into());
 
-        let step = ExecutionStep(log.0);
-
-        let _ = step.execute(&mut graph).await.unwrap();
+        Executor::execute(&mut graph, log.0).await.unwrap();
 
         assert!(logs_contain("Hello, world!"));
     }

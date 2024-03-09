@@ -40,7 +40,7 @@ async fn main() {
     let backend = Arc::new(backend);
     let llm_1 = LlmNode::new(&mut graph, LlmWeight::new(backend.clone()));
 
-    let prompt = llm_1.prompt(&graph).unwrap();
+    let prompt = llm_1.input(&graph).unwrap();
     prompt.set_value(
         &mut graph,
         "Write an LLM prompt to get a cat fact, but write your prompt backwards."
@@ -48,7 +48,7 @@ async fn main() {
             .into(),
     );
 
-    let response = llm_1.response(&graph).unwrap();
+    let response = llm_1.output(&graph).unwrap();
 
     // Log the response.
     {
@@ -63,10 +63,10 @@ async fn main() {
     let llm_2 = LlmNode::new(&mut graph, LlmWeight::new(backend));
     llm_2.run_after(&mut graph, llm_1.0);
 
-    let prompt = llm_2.prompt(&graph).unwrap();
+    let prompt = llm_2.input(&graph).unwrap();
     prompt.set_input(&mut graph, Some(response));
 
-    let response = llm_2.response(&graph).unwrap();
+    let response = llm_2.output(&graph).unwrap();
 
     // Log the response.
     {
