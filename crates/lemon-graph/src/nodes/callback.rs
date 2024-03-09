@@ -92,19 +92,35 @@ mod tests {
     #[tokio::test]
     async fn test_callback() {
         let mut graph = Graph::default();
+
         let callback = CallbackNode::new(&mut graph, |input| {
-            let input = match input {
+            let value = match input {
                 Value::String(value) => value,
                 _ => panic!("Invalid input"),
             };
 
-            let input = input.to_uppercase();
-
-            Value::String(input)
+            Value::String(value.to_uppercase())
         });
 
-        let message = callback.input(&graph).unwrap();
-        message.set_value(&mut graph, "Hello, world!".to_string().into());
+        let input = callback.input(&graph).unwrap();
+        input.set_value(&mut graph, "Hello, world!".to_string().into());
+
+        let callback_2 = CallbackNode::new(&mut graph, |input| {
+            let value = match &input {
+                Value::String(value) => value,
+                _ => panic!("Invalid input"),
+            };
+
+            assert_eq!(value, "HELLO, WORLD!");
+
+            input
+        });
+
+        callback_2.run_after(&mut graph, callback.0);
+
+        let output = callback.output(&graph).unwrap();
+        let input = callback_2.input(&graph).unwrap();
+        input.set_input(&mut graph, Some(output));
 
         Executor::execute(&mut graph, callback.0).await.unwrap();
     }
