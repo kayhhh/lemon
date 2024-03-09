@@ -22,7 +22,7 @@
 //!    });
 //!
 //!    // Create an LLM node, using our Ollama backend.
-//!    let llm = LlmNode::new(&mut graph, LlmWeight::new(backend.clone()));
+//!    let llm = LlmNode::new(&mut graph, LlmWeight::new(backend));
 //!
 //!    // Create a prompt node to get user input.
 //!    let prompt = PromptNode::new(&mut graph);
