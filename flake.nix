@@ -61,8 +61,8 @@
         commonShell = {
           checks = self.checks.${localSystem};
           packages = with pkgs; [
+            cargo-machete
             cargo-rdme
-            cargo-watch
             rust-analyzer
           ];
         };
