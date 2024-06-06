@@ -13,18 +13,16 @@ ollama = ["dep:async-recursion", "dep:futures-util", "dep:reqwest", "dep:serde",
 replicate = ["dep:replicate-rust"]
 
 [dependencies]
-lemon-graph.workspace = true
-petgraph.workspace = true
-thiserror.workspace = true
-tracing.workspace = true
-
 async-recursion = { version = "1.1.0", optional = true }
 futures-util = { version = "0.3.30", optional = true }
-reqwest = { version = "0.11.26", optional = true }
+lemon-graph.workspace = true
+petgraph.workspace = true
+replicate-rust = { version = "0.0.5", optional = true }
+reqwest = { version = "0.11.26", features = ["stream"], optional = true }
 serde = { version = "1.0.197", optional = true }
 serde_json = { version = "1.0.114", optional = true }
-
-replicate-rust = { version = "0.0.5", optional = true }
+thiserror.workspace = true
+tracing.workspace = true
 
 [dev-dependencies]
 tokio.workspace = true
