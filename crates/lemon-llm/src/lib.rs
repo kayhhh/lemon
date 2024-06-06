@@ -85,6 +85,10 @@ impl LlmNode {
         Self(index)
     }
 
+    pub fn from_backend<T: LlmBackend + 'static>(graph: &mut Graph, backend: Arc<T>) -> Self {
+        Self::new(graph, LlmWeight::new(backend))
+    }
+
     pub fn input(&self, graph: &Graph) -> Result<StoreWrapper, GetStoreError> {
         self.input_stores(graph)
             .next()

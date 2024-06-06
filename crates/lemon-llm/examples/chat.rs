@@ -6,7 +6,7 @@ use lemon_graph::{
 };
 use lemon_llm::{
     ollama::{OllamaBackend, OllamaModel},
-    LlmNode, LlmWeight,
+    LlmNode,
 };
 use petgraph::Graph;
 
@@ -23,7 +23,7 @@ async fn main() {
         model: OllamaModel::Mistral,
         ..Default::default()
     });
-    let llm = LlmNode::new(&mut graph, LlmWeight::new(backend));
+    let llm = LlmNode::from_backend(&mut graph, backend);
 
     // Create a prompt node to get user input.
     let prompt = PromptNode::new(&mut graph);
