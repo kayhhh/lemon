@@ -93,7 +93,7 @@ async fn generate_ollama(
                                 continue;
                             }
                             info!("Ollama status: {}", status.status);
-                            last_status = status.status.clone();
+                            last_status.clone_from(&status.status);
                         }
                     }
                 }
