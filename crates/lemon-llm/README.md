@@ -12,7 +12,7 @@ We take user input, send it to an LLM, print the response, and repeat.
 ```rust
 use std::sync::Arc;
 
-use lemon_graph::{Graph, Executor, nodes::{NodeWrapper, PromptNode}};
+use lemon_graph::{Graph, Executor, nodes::{Node, PromptNode}};
 use lemon_llm::{ollama::{OllamaBackend, OllamaModel}, LlmBackend, LlmNode, LlmWeight};
 
 #[tokio::main]

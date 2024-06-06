@@ -7,7 +7,7 @@ Async directed computation graphs, using [petgraph](https://crates.io/crates/pet
 ## Usage
 
 ```rust
-use lemon_graph::{Executor, Graph, Value, nodes::{CallbackNode, LogNode, NodeWrapper}};
+use lemon_graph::{Executor, Graph, Value, nodes::{CallbackNode, LogNode, Node}};
 
 #[tokio::main]
 async fn main() {

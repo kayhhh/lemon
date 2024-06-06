@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use lemon_graph::{
-    nodes::{CallbackNode, NodeWrapper, PromptNode},
+    nodes::{CallbackNode, Node, PromptNode},
     Executor, Value,
 };
 use lemon_llm::{

@@ -1,8 +1,9 @@
 use petgraph::graph::NodeIndex;
 
-use crate::{Graph, GraphEdge, GraphNode, Value};
-
-use super::{GetStoreError, NodeError, NodeWrapper, StoreWrapper, SyncNode};
+use crate::{
+    nodes::{GetStoreError, Node, NodeError, Store, SyncNode},
+    Graph, GraphEdge, GraphNode, Value,
+};
 
 /// General purpose node that runs a provided callback.
 #[derive(Debug, Clone, Copy)]
@@ -14,7 +15,7 @@ impl From<CallbackNode> for NodeIndex {
     }
 }
 
-impl NodeWrapper for CallbackNode {}
+impl Node for CallbackNode {}
 
 impl CallbackNode {
     pub fn new(graph: &mut Graph, cb: impl Fn(Value) -> Value + 'static) -> Self {
@@ -31,13 +32,13 @@ impl CallbackNode {
         Self(index)
     }
 
-    pub fn input(&self, graph: &Graph) -> Result<StoreWrapper, GetStoreError> {
+    pub fn input(&self, graph: &Graph) -> Result<Store, GetStoreError> {
         self.input_stores(graph)
             .next()
             .ok_or(GetStoreError::NoStore)
     }
 
-    pub fn output(&self, graph: &Graph) -> Result<StoreWrapper, GetStoreError> {
+    pub fn output(&self, graph: &Graph) -> Result<Store, GetStoreError> {
         self.output_stores(graph)
             .next()
             .ok_or(GetStoreError::NoStore)

@@ -1,4 +1,4 @@
-use lemon_graph::nodes::NodeWrapper;
+use lemon_graph::nodes::Node;
 use petgraph::graph::NodeIndex;
 
 #[derive(Debug, Clone, Copy)]
@@ -10,7 +10,7 @@ impl From<QdrantNode> for NodeIndex {
     }
 }
 
-impl NodeWrapper for QdrantNode {}
+impl Node for QdrantNode {}
 
 #[cfg(test)]
 mod tests {

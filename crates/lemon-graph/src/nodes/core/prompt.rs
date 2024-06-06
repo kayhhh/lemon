@@ -1,8 +1,9 @@
 use petgraph::graph::NodeIndex;
 
-use crate::{Graph, GraphEdge, GraphNode, Value};
-
-use super::{GetStoreError, NodeError, NodeWrapper, StoreWrapper, SyncNode};
+use crate::{
+    nodes::{GetStoreError, Node, NodeError, Store, SyncNode},
+    Graph, GraphEdge, GraphNode, Value,
+};
 
 #[derive(Debug, Clone, Copy)]
 pub struct PromptNode(pub NodeIndex);
@@ -13,7 +14,7 @@ impl From<PromptNode> for NodeIndex {
     }
 }
 
-impl NodeWrapper for PromptNode {}
+impl Node for PromptNode {}
 
 impl PromptNode {
     pub fn new(graph: &mut Graph) -> Self {
@@ -28,13 +29,13 @@ impl PromptNode {
         Self(index)
     }
 
-    pub fn input(&self, graph: &Graph) -> Result<StoreWrapper, GetStoreError> {
+    pub fn input(&self, graph: &Graph) -> Result<Store, GetStoreError> {
         self.input_stores(graph)
             .next()
             .ok_or(GetStoreError::NoStore)
     }
 
-    pub fn output(&self, graph: &Graph) -> Result<StoreWrapper, GetStoreError> {
+    pub fn output(&self, graph: &Graph) -> Result<Store, GetStoreError> {
         self.output_stores(graph)
             .next()
             .ok_or(GetStoreError::NoStore)

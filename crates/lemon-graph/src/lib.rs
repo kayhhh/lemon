@@ -3,7 +3,7 @@
 //! # Usage
 //!
 //! ```
-//! use lemon_graph::{Executor, Graph, Value, nodes::{CallbackNode, LogNode, NodeWrapper}};
+//! use lemon_graph::{Executor, Graph, Value, nodes::{CallbackNode, LogNode, Node}};
 //!
 //! #[tokio::main]
 //! async fn main() {

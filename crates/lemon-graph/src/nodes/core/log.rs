@@ -1,9 +1,10 @@
 use petgraph::graph::NodeIndex;
 use tracing::info;
 
-use crate::{Graph, GraphEdge, GraphNode, Value};
-
-use super::{GetStoreError, NodeError, NodeWrapper, StoreWrapper, SyncNode};
+use crate::{
+    nodes::{GetStoreError, Node, NodeError, Store, SyncNode},
+    Graph, GraphEdge, GraphNode, Value,
+};
 
 /// Logs a provided message.
 #[derive(Debug, Clone, Copy)]
@@ -15,7 +16,7 @@ impl From<LogNode> for NodeIndex {
     }
 }
 
-impl NodeWrapper for LogNode {}
+impl Node for LogNode {}
 
 impl LogNode {
     pub fn new(graph: &mut Graph) -> Self {
@@ -27,7 +28,7 @@ impl LogNode {
         Self(index)
     }
 
-    pub fn message(&self, graph: &Graph) -> Result<StoreWrapper, GetStoreError> {
+    pub fn message(&self, graph: &Graph) -> Result<Store, GetStoreError> {
         self.input_stores(graph)
             .next()
             .ok_or(GetStoreError::NoStore)

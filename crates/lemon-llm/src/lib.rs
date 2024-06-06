@@ -8,7 +8,7 @@
 //! ```
 //! use std::sync::Arc;
 //!
-//! use lemon_graph::{Graph, Executor, nodes::{NodeWrapper, PromptNode}};
+//! use lemon_graph::{Graph, Executor, nodes::{Node, PromptNode}};
 //! use lemon_llm::{ollama::{OllamaBackend, OllamaModel}, LlmBackend, LlmNode, LlmWeight};
 //!
 //! #[tokio::main]
@@ -49,7 +49,7 @@
 use std::{future::Future, sync::Arc};
 
 use lemon_graph::{
-    nodes::{AsyncNode, GetStoreError, NodeError, NodeWrapper, StoreWrapper},
+    nodes::{AsyncNode, GetStoreError, Node, NodeError, Store},
     Graph, GraphEdge, GraphNode, Value,
 };
 use petgraph::graph::NodeIndex;
@@ -70,7 +70,7 @@ impl From<LlmNode> for NodeIndex {
     }
 }
 
-impl NodeWrapper for LlmNode {}
+impl Node for LlmNode {}
 
 impl LlmNode {
     pub fn new<T: LlmBackend>(graph: &mut Graph, weight: LlmWeight<T>) -> Self {
@@ -89,13 +89,13 @@ impl LlmNode {
         Self::new(graph, LlmWeight::new(backend))
     }
 
-    pub fn input(&self, graph: &Graph) -> Result<StoreWrapper, GetStoreError> {
+    pub fn input(&self, graph: &Graph) -> Result<Store, GetStoreError> {
         self.input_stores(graph)
             .next()
             .ok_or(GetStoreError::NoStore)
     }
 
-    pub fn output(&self, graph: &Graph) -> Result<StoreWrapper, GetStoreError> {
+    pub fn output(&self, graph: &Graph) -> Result<Store, GetStoreError> {
         self.output_stores(graph)
             .next()
             .ok_or(GetStoreError::NoStore)
