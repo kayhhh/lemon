@@ -1,4 +1,4 @@
-name: "CI"
+name: CI
 
 on:
   push:
@@ -24,15 +24,15 @@ jobs:
     steps:
       - uses: AdityaGarg8/remove-unwanted-software@v3
         with:
-          remove-android: "true"
-          remove-codeql: "true"
-          remove-docker-images: "true"
-          remove-dotnet: "true"
-          remove-haskell: "true"
+          remove-android: true
+          remove-codeql: true
+          remove-docker-images: true
+          remove-dotnet: true
+          remove-haskell: true
 
       - uses: actions/checkout@v4
         with:
-          submodules: "true"
+          submodules: true
           ref: ${{ github.event.pull_request.head.ref }}
 
       - uses: DeterminateSystems/flake-checker-action@v8
